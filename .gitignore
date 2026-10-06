@@ -1,0 +1,80 @@
+# ============================================================
+# PataHogar - .gitignore
+# ============================================================
+
+# ---------- Credenciales y configuración local ----------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+secrets/
+credentials.json
+
+# ---------- Dependencias y artefactos de compilación ----------
+node_modules/
+dist/
+dist-ssr/
+build/
+coverage/
+.vite/
+*.local
+*.tsbuildinfo
+
+# ---------- Archivos subidos por los usuarios (datos personales) ----------
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# ---------- Logs ----------
+logs/*
+!logs/.gitkeep
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# ---------- Bases de datos, volcados y backups ----------
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+*.bak
+database/
+db_backup/
+
+# ---------- Editores, sistema operativo y herramientas ----------
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.claude/
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ---------- Archivos temporales ----------
+tmp/
+temp/
+*.tmp
+
+# ---------- Documentos de uso personal (no forman parte del repositorio) ----------
+/COMO_DESPLEGAR_EN_RAILWAY.md
+/COMO_MOVER_A_OTRA_PC.md
+/CONEXION_DESKTOP_APP_VERIFICACIONES.md
+/DOCUMENTACION_COMPLETA_DEL_SISTEMA.md
+/DOCUMENTACION_TECNICA.md
+/GUIA_SIMPLE_DEL_PROYECTO.md
+/LISTA_DE_FUNCIONES_Y_QUE_SE_PUEDE_SACAR.md
+/STACK.md
+
+# ---------- Configuración de plataformas de despliegue no utilizadas ----------
+/railway.json
+
+# ---------- Boilerplate de la plantilla de Vite (reemplazado por el README raíz) ----------
+/frontend/README.md
