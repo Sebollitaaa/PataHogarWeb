@@ -34,5 +34,15 @@ module.exports = {
     refreshExpiresInDaysSession: parseInt(process.env.JWT_REFRESH_EXPIRES_IN_DAYS_SESSION, 10) || 1,
   },
 
+  // Envío de correos (Resend). Sin RESEND_API_KEY, en desarrollo los correos se
+  // simulan: el contenido (con el código) se imprime en la consola del backend.
+  email: {
+    resendApiKey: process.env.RESEND_API_KEY || '',
+    from: process.env.EMAIL_FROM || 'PataHogar <no-reply@example.com>',
+    codeExpiresMinutes: parseInt(process.env.EMAIL_CODE_EXPIRES_MIN, 10) || 15,
+    resendCooldownSeconds: parseInt(process.env.EMAIL_RESEND_COOLDOWN_SECONDS, 10) || 60,
+    maxAttempts: parseInt(process.env.EMAIL_CODE_MAX_ATTEMPTS, 10) || 5,
+  },
+
   locationMismatchBlockKm: parseFloat(process.env.LOCATION_MISMATCH_BLOCK_KM) || 100,
 };

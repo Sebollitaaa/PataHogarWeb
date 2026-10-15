@@ -16,7 +16,16 @@ const app = express();
 
 app.set('trust proxy', 1);
 
-app.use(helmet());
+// Se permiten imágenes `blob:` para las vistas previas de archivos elegidos en los
+// formularios (fotos de mascotas y documentos) cuando el backend sirve el frontend.
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      'img-src': ["'self'", 'data:', 'blob:'],
+    },
+  },
+}));
 app.use(cors({
   origin: env.clientUrls,
   credentials: true,

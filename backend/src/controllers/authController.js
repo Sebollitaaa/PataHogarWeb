@@ -5,7 +5,10 @@ const cityRepository = require('../models/cityRepository');
 const refreshTokenRepository = require('../models/refreshTokenRepository');
 const tokenService = require('../services/tokenService');
 const locationService = require('../services/locationService');
+const emailCodeService = require('../services/emailCodeService');
 const env = require('../config/env');
+
+const { PURPOSES } = emailCodeService;
 
 const BCRYPT_ROUNDS = 12;
 const REFRESH_COOKIE_NAME = 'refresh_token';
@@ -18,6 +21,12 @@ function refreshCookieOptions(maxAgeMs) {
     maxAge: maxAgeMs,
     path: '/api/auth',
   };
+}
+
+// Los clientes móviles no manejan cookies httpOnly de forma fiable: si mandan
+// `X-Client: mobile`, el refresh token viaja en el cuerpo (login/refresh/logout).
+function isMobileClient(req) {
+  return req.headers['x-client'] === 'mobile';
 }
 
 function toPublicUser(user) {
@@ -37,6 +46,11 @@ function toPublicUser(user) {
   };
 }
 
+function readRefreshToken(req) {
+  if (isMobileClient(req)) return typeof req.body?.refreshToken === 'string' ? req.body.refreshToken : null;
+  return req.cookies[REFRESH_COOKIE_NAME];
+}
+
 async function register(req, res) {
   const {
     firstName, lastName, email, password, phone, verifiedLat, verifiedLng,
@@ -44,7 +58,7 @@ async function register(req, res) {
   } = req.body;
 
   const existing = await userRepository.findByEmail(email);
-  if (existing) {
+  if (existing && existing.email_verified_at) {
     throw new ApiError(409, 'Ya existe una cuenta registrada con ese email.');
   }
 
@@ -59,22 +73,95 @@ async function register(req, res) {
   const location = locationService.resolveUserLocation(city, verifiedLat, verifiedLng);
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
-  const user = await userRepository.create({
+  const profile = {
     first_name: firstName,
     last_name: lastName,
-    email,
     password_hash: passwordHash,
     phone,
     city_id: city.id,
     verified_lat: location.verifiedLat,
     verified_lng: location.verifiedLng,
     location_source: location.locationSource,
-  });
+  };
+
+  let user;
+  if (existing) {
+    // Cuenta creada pero nunca verificada: se reutiliza con los datos nuevos. Solo
+    // quien controle el correo podrá activarla con el código, así que es seguro.
+    await userRepository.update(existing.id, profile);
+    user = await userRepository.findById(existing.id);
+  } else {
+    user = await userRepository.create({ ...profile, email });
+  }
+
+  // Si ya se envió un código hace instantes (reintento inmediato), no se vuelve a enviar.
+  let emailSent = true;
+  if ((await emailCodeService.cooldownRemaining(user.id, PURPOSES.VERIFY_EMAIL)) === 0) {
+    emailSent = await emailCodeService.issueAndSend(user, PURPOSES.VERIFY_EMAIL);
+  }
 
   res.status(201).json({
-    message: 'Cuenta creada. Ya podés iniciar sesión.',
+    message: 'Cuenta creada. Te enviamos un código a tu correo para verificarla.',
     email: user.email,
+    requiresVerification: true,
+    emailSent,
   });
+}
+
+async function verifyEmail(req, res) {
+  const { email, code } = req.body;
+  const user = await userRepository.findByEmail(email);
+
+  if (user && user.email_verified_at) {
+    throw new ApiError(400, 'Esta cuenta ya está verificada. Podés iniciar sesión.');
+  }
+
+  await emailCodeService.consume(user, PURPOSES.VERIFY_EMAIL, code);
+  await userRepository.update(user.id, { email_verified_at: new Date() });
+
+  res.json({ message: 'Correo verificado. Ya podés iniciar sesión.' });
+}
+
+// Respuesta siempre genérica: no se revela si el correo existe o si ya está verificado.
+async function resendVerification(req, res) {
+  const user = await userRepository.findByEmail(req.body.email);
+
+  if (user && !user.email_verified_at && user.status !== 'banned') {
+    if ((await emailCodeService.cooldownRemaining(user.id, PURPOSES.VERIFY_EMAIL)) === 0) {
+      await emailCodeService.issueAndSend(user, PURPOSES.VERIFY_EMAIL);
+    }
+  }
+
+  res.json({ message: 'Si el correo corresponde a una cuenta pendiente de verificación, te enviamos un código nuevo.' });
+}
+
+async function forgotPassword(req, res) {
+  const user = await userRepository.findByEmail(req.body.email);
+
+  if (user && user.status !== 'banned') {
+    if ((await emailCodeService.cooldownRemaining(user.id, PURPOSES.RESET_PASSWORD)) === 0) {
+      await emailCodeService.issueAndSend(user, PURPOSES.RESET_PASSWORD);
+    }
+  }
+
+  res.json({ message: 'Si el correo corresponde a una cuenta, te enviamos un código para restablecer la contraseña.' });
+}
+
+async function resetPassword(req, res) {
+  const { email, code, newPassword } = req.body;
+  const user = await userRepository.findByEmail(email);
+
+  await emailCodeService.consume(user, PURPOSES.RESET_PASSWORD, code);
+
+  const changes = { password_hash: await bcrypt.hash(newPassword, BCRYPT_ROUNDS) };
+  // Haber recibido el código demuestra que la persona controla ese correo.
+  if (!user.email_verified_at) changes.email_verified_at = new Date();
+  await userRepository.update(user.id, changes);
+
+  // Por seguridad se cierran todas las sesiones abiertas de la cuenta.
+  await refreshTokenRepository.revokeAllForUser(user.id);
+
+  res.json({ message: 'Contraseña actualizada. Ya podés iniciar sesión con la nueva.' });
 }
 
 async function issueSession(res, user, rememberMe, req) {
@@ -89,8 +176,10 @@ async function issueSession(res, user, rememberMe, req) {
     ip_address: req.ip,
   });
 
+  if (isMobileClient(req)) return { accessToken, refreshToken: token };
+
   res.cookie(REFRESH_COOKIE_NAME, token, refreshCookieOptions(days * 24 * 60 * 60 * 1000));
-  return accessToken;
+  return { accessToken };
 }
 
 async function login(req, res) {
@@ -104,15 +193,20 @@ async function login(req, res) {
 
   if (user.status === 'banned') throw new ApiError(403, 'Tu cuenta fue suspendida.');
 
-  const accessToken = await issueSession(res, user, Boolean(rememberMe), req);
+  if (!user.email_verified_at) {
+    const message = 'Tenés que verificar tu correo antes de iniciar sesión.';
+    throw new ApiError(403, message, [{ field: 'email', code: 'email_not_verified', message, email: user.email }]);
+  }
+
+  const session = await issueSession(res, user, Boolean(rememberMe), req);
   await userRepository.update(user.id, { last_login_at: new Date() });
 
   const publicUser = await userRepository.findPublicById(user.id);
-  res.json({ accessToken, user: toPublicUser(publicUser) });
+  res.json({ ...session, user: toPublicUser(publicUser) });
 }
 
 async function refresh(req, res) {
-  const token = req.cookies[REFRESH_COOKIE_NAME];
+  const token = readRefreshToken(req);
   if (!token) throw new ApiError(401, 'No hay sesión activa.');
 
   const tokenHash = tokenService.hashRefreshToken(token);
@@ -130,14 +224,14 @@ async function refresh(req, res) {
   // Rotación: se revoca el token usado y se emite uno nuevo.
   await refreshTokenRepository.revoke(record.id);
   const rememberMe = record.expires_at - record.created_at > 2 * 24 * 60 * 60 * 1000;
-  const accessToken = await issueSession(res, user, rememberMe, req);
+  const session = await issueSession(res, user, rememberMe, req);
 
   const publicUser = await userRepository.findPublicById(user.id);
-  res.json({ accessToken, user: toPublicUser(publicUser) });
+  res.json({ ...session, user: toPublicUser(publicUser) });
 }
 
 async function logout(req, res) {
-  const token = req.cookies[REFRESH_COOKIE_NAME];
+  const token = readRefreshToken(req);
   if (token) {
     const tokenHash = tokenService.hashRefreshToken(token);
     const record = await refreshTokenRepository.findActiveByHash(tokenHash);
@@ -155,6 +249,10 @@ async function me(req, res) {
 
 module.exports = {
   register,
+  verifyEmail,
+  resendVerification,
+  forgotPassword,
+  resetPassword,
   login,
   refresh,
   logout,

@@ -1,10 +1,13 @@
 const { body } = require('express-validator');
+const { passwordRule } = require('./passwordPolicy');
+
+const codeRule = () => body('code').trim().matches(/^\d{6}$/).withMessage('El código debe tener 6 dígitos.');
 
 const registerValidator = [
   body('firstName').trim().isLength({ min: 2, max: 100 }).withMessage('El nombre debe tener al menos 2 caracteres.'),
   body('lastName').trim().isLength({ min: 2, max: 100 }).withMessage('El apellido debe tener al menos 2 caracteres.'),
   body('email').trim().isEmail().withMessage('El email no es válido.').normalizeEmail(),
-  body('password').isLength({ min: 8 }).withMessage('La contraseña debe tener al menos 8 caracteres.'),
+  passwordRule(body('password')),
   body('phone').trim().matches(/^[0-9+\s-]{6,30}$/).withMessage('El teléfono no es válido.'),
   body('cityGeorefId').notEmpty().withMessage('Elegí tu ciudad de la lista de sugerencias.'),
   body('cityName').trim().notEmpty(),
@@ -21,7 +24,25 @@ const loginValidator = [
   body('rememberMe').optional().isBoolean(),
 ];
 
+const verifyEmailValidator = [
+  body('email').trim().isEmail().withMessage('El email no es válido.').normalizeEmail(),
+  codeRule(),
+];
+
+const emailOnlyValidator = [
+  body('email').trim().isEmail().withMessage('El email no es válido.').normalizeEmail(),
+];
+
+const resetPasswordValidator = [
+  body('email').trim().isEmail().withMessage('El email no es válido.').normalizeEmail(),
+  codeRule(),
+  passwordRule(body('newPassword')),
+];
+
 module.exports = {
   registerValidator,
   loginValidator,
+  verifyEmailValidator,
+  emailOnlyValidator,
+  resetPasswordValidator,
 };
