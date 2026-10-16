@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import Field from '../components/ui/Field';
 import PhotoPicker from '../components/PhotoPicker';
 import AgeInput from '../components/AgeInput';
+import BreedPicker, { EMPTY_BREED_VALUE, breedPayload, breedValueFromPet } from '../components/BreedPicker';
 import FullPageSpinner from '../components/ui/FullPageSpinner';
 import { XIcon } from '../components/icons/Icons';
 import { API_ORIGIN } from '../api/origin';
@@ -19,6 +20,7 @@ export default function EditPetPage() {
   const [species, setSpecies] = useState([]);
   const [pet, setPet] = useState(null);
   const [form, setForm] = useState(null);
+  const [breedValue, setBreedValue] = useState(EMPTY_BREED_VALUE);
   const [newPhotos, setNewPhotos] = useState([]);
   const [error, setError] = useState('');
   const [photoError, setPhotoError] = useState('');
@@ -33,8 +35,9 @@ export default function EditPetPage() {
         return;
       }
       setPet(pet);
+      setBreedValue(breedValueFromPet(pet));
       setForm({
-        speciesId: pet.species.id, name: pet.name, breed: pet.breed || '', size: pet.size,
+        speciesId: pet.species.id, name: pet.name, size: pet.size,
         ageMode: pet.ageMode, birthDate: pet.birthDate ? pet.birthDate.slice(0, 10) : '',
         ageYears: pet.ageYears, ageMonths: pet.ageMonths, ageDays: pet.ageDays,
         sex: pet.sex,
@@ -47,6 +50,7 @@ export default function EditPetPage() {
 
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
+    if (field === 'speciesId') setBreedValue(EMPTY_BREED_VALUE);
   }
 
   async function handleSubmit(e) {
@@ -54,7 +58,7 @@ export default function EditPetPage() {
     setError('');
     setLoading(true);
     try {
-      const { pet: updated } = await petsApi.update(id, form);
+      const { pet: updated } = await petsApi.update(id, { ...form, ...breedPayload(breedValue) });
       setPet(updated);
       navigate(`/mascotas/${id}`);
     } catch (err) {
@@ -123,7 +127,7 @@ export default function EditPetPage() {
         {error && <div className="alert alert-error" style={{ margin: '16px 0' }}>{error}</div>}
 
         <form onSubmit={handleSubmit}>
-          <div className="field-row-3">
+          <div className="field-row">
             <Field label="Nombre" htmlFor="name">
               <input id="name" className="input" required value={form.name} onChange={(e) => set('name', e.target.value)} />
             </Field>
@@ -132,10 +136,14 @@ export default function EditPetPage() {
                 {species.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
             </Field>
-            <Field label="Raza (opcional)" htmlFor="breed">
-              <input id="breed" className="input" value={form.breed} onChange={(e) => set('breed', e.target.value)} />
-            </Field>
           </div>
+
+          <BreedPicker
+            key={form.speciesId}
+            speciesId={form.speciesId}
+            value={breedValue}
+            onChange={setBreedValue}
+          />
 
           <div className="field-row">
             <Field label="Tamaño" htmlFor="size">

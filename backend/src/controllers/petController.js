@@ -6,6 +6,7 @@ const notificationService = require('../services/notificationService');
 const adminActionRepository = require('../models/adminActionRepository');
 const locationService = require('../services/locationService');
 const imageService = require('../services/imageService');
+const breedCatalogService = require('../services/breedCatalogService');
 const { computeAgeFromBirthDate } = require('../utils/age');
 
 const MAX_PHOTOS = 10;
@@ -54,6 +55,16 @@ function serializePet(pet, photos = []) {
     name: pet.name,
     species: { id: pet.species_id, name: pet.species_name, slug: pet.species_slug },
     breed: pet.breed,
+    breedId: pet.breed_id || null,
+    crossBreedId: pet.cross_breed_id || null,
+    breedInfo: pet.breed_id
+      ? { id: pet.breed_id, name: pet.breed_name, imageUrl: pet.breed_image_url || null, isGeneric: Boolean(pet.breed_is_generic) }
+      : null,
+    crossBreedInfo: pet.cross_breed_id
+      ? { id: pet.cross_breed_id, name: pet.cross_breed_name, imageUrl: pet.cross_breed_image_url || null }
+      : null,
+    isCrossBreed: Boolean(pet.cross_breed_id),
+    isPureBreed: Boolean(pet.is_pure_breed),
     size: pet.size,
     ageMode: pet.age_mode,
     birthDate: pet.birth_date,
@@ -95,11 +106,17 @@ async function create(req, res) {
   const { lat, lng } = await locationService.getEffectiveUserLocation(user);
 
   const b = req.body;
+  const breedFields = await breedCatalogService.resolveBreedFields({
+    speciesId: Number(b.speciesId),
+    breedId: b.breedId,
+    crossBreedId: b.crossBreedId,
+    breedText: b.breed,
+  });
   const petId = await petRepository.create({
     owner_id: user.id,
     species_id: b.speciesId,
     name: b.name,
-    breed: b.breed || null,
+    ...breedFields,
     size: b.size,
     ...buildAgeFields(b),
     sex: b.sex,
@@ -145,7 +162,7 @@ async function update(req, res) {
   const b = req.body || {};
   const changes = {};
   const map = {
-    speciesId: 'species_id', name: 'name', breed: 'breed', size: 'size',
+    speciesId: 'species_id', name: 'name', size: 'size',
     sex: 'sex', description: 'description',
     contactWhatsapp: 'contact_whatsapp', contactEmail: 'contact_email',
   };
@@ -157,6 +174,18 @@ async function update(req, res) {
   }
   if (b.ageMode !== undefined) {
     Object.assign(changes, buildAgeFields(b));
+  }
+
+  const touchesBreed = ['breed', 'breedId', 'crossBreedId'].some((k) => b[k] !== undefined);
+  const speciesChanged = b.speciesId !== undefined && Number(b.speciesId) !== pet.species_id;
+  if (touchesBreed || speciesChanged) {
+    // Si cambió la especie y no mandaron raza nueva, la raza anterior ya no aplica.
+    Object.assign(changes, await breedCatalogService.resolveBreedFields({
+      speciesId: Number(b.speciesId !== undefined ? b.speciesId : pet.species_id),
+      breedId: touchesBreed ? b.breedId : null,
+      crossBreedId: touchesBreed ? b.crossBreedId : null,
+      breedText: touchesBreed ? b.breed : null,
+    }));
   }
 
   if (Object.keys(changes).length > 0) {
@@ -312,6 +341,8 @@ async function search(req, res) {
     isDewormed: q.isDewormed,
     status: q.status,
     q: q.q,
+    breedId: q.breedId ? parseInt(q.breedId, 10) : undefined,
+    pureBreed: q.pureBreed,
     lat: q.lat !== undefined ? parseFloat(q.lat) : undefined,
     lng: q.lng !== undefined ? parseFloat(q.lng) : undefined,
     maxDistanceKm: q.maxDistanceKm !== undefined ? parseFloat(q.maxDistanceKm) : undefined,

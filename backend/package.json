@@ -13,6 +13,8 @@
     "migrate:rollback": "knex migrate:rollback",
     "migrate:status": "knex migrate:status",
     "seed": "knex seed:run",
+    "breeds:sync": "node scripts/syncBreeds.js",
+    "breeds:credits": "node scripts/breedCredits.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

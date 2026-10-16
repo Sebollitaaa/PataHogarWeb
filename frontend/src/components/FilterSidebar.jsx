@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import CityAutocomplete from './CityAutocomplete';
+import BreedAutocomplete from './BreedAutocomplete';
 import { FilterIcon } from './icons/Icons';
 import './filter-sidebar.css';
 
@@ -12,6 +14,12 @@ const SIZES = [
 const DISTANCES = [25, 50, 100, 250, 500];
 
 export default function FilterSidebar({ filters, onChange, onReset }) {
+  const [breedDraft, setBreedDraft] = useState(filters.breed?.name || '');
+
+  useEffect(() => {
+    setBreedDraft(filters.breed?.name || '');
+  }, [filters.breed]);
+
   function set(patch) {
     onChange({ ...filters, ...patch });
   }
@@ -41,6 +49,27 @@ export default function FilterSidebar({ filters, onChange, onReset }) {
           </select>
         </div>
       )}
+
+      <div className="field">
+        <label>Raza</label>
+        <BreedAutocomplete
+          value={breedDraft}
+          onChange={(text) => {
+            setBreedDraft(text);
+            if (filters.breed) set({ breed: null });
+          }}
+          onSelect={(breed) => set({ breed, speciesId: breed.species.id, q: '' })}
+          speciesId={filters.speciesId ? Number(filters.speciesId) : undefined}
+          includeGeneric={false}
+          openOnFocusWithoutText={false}
+          placeholder="Cualquiera"
+        />
+        <label className="checkbox-row" title="Oculta las cruzas y los mestizos">
+          <input type="checkbox" checked={filters.pureBreed} onChange={(e) => set({ pureBreed: e.target.checked })} />
+          Solo pura raza
+        </label>
+        <span className="field-hint">Al buscar una raza también aparecen las cruzas que la tengan.</span>
+      </div>
 
       <div className="field">
         <label>Sexo</label>

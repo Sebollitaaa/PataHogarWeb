@@ -7,12 +7,19 @@ const PET_BASE_SELECT = [
   'users.first_name as owner_first_name',
   'users.last_name as owner_last_name',
   'users.is_verified_organization as owner_is_verified_organization',
+  'b1.name as breed_name',
+  'b1.image_url as breed_image_url',
+  'b1.is_generic as breed_is_generic',
+  'b2.name as cross_breed_name',
+  'b2.image_url as cross_breed_image_url',
 ];
 
 function withJoins(query) {
   return query
     .join('species', 'species.id', 'pets.species_id')
-    .join('users', 'users.id', 'pets.owner_id');
+    .join('users', 'users.id', 'pets.owner_id')
+    .leftJoin('breeds as b1', 'b1.id', 'pets.breed_id')
+    .leftJoin('breeds as b2', 'b2.id', 'pets.cross_breed_id');
 }
 
 function create(pet) {
@@ -69,7 +76,7 @@ function findMineByOwner(ownerId, status) {
 async function search(filters) {
   const {
     speciesId, sex, size, minAgeYears, maxAgeYears,
-    isVaccinated, isNeutered, isDewormed, status, q,
+    isVaccinated, isNeutered, isDewormed, status, q, breedId, pureBreed,
     lat, lng, maxDistanceKm, page = 1, pageSize = 20,
   } = filters;
 
@@ -85,9 +92,23 @@ async function search(filters) {
   if (isVaccinated !== undefined) base = base.where('pets.is_vaccinated', isVaccinated === 'true');
   if (isNeutered !== undefined) base = base.where('pets.is_neutered', isNeutered === 'true');
   if (isDewormed !== undefined) base = base.where('pets.is_dewormed', isDewormed === 'true');
-  if (q) {
+  if (breedId) {
+    // Una cruza aparece al buscar cualquiera de sus dos razas.
     base = base.where((builder) => {
-      builder.where('pets.name', 'like', `%${q}%`).orWhere('pets.breed', 'like', `%${q}%`);
+      builder.where('pets.breed_id', breedId).orWhere('pets.cross_breed_id', breedId);
+    });
+  }
+  if (pureBreed === 'true') base = base.where('pets.is_pure_breed', true);
+  if (q) {
+    const like = `%${q.replace(/[\\%_]/g, '\\$&')}%`;
+    const matchingBreeds = () => db('breeds').select('id').where('name', 'like', like).orWhere('aliases', 'like', like);
+    base = base.where((builder) => {
+      builder
+        .where('pets.name', 'like', like)
+        .orWhere('pets.breed', 'like', like)
+        // También por alias: "poodle" encuentra a los Caniche.
+        .orWhereIn('pets.breed_id', matchingBreeds())
+        .orWhereIn('pets.cross_breed_id', matchingBreeds());
     });
   }
 

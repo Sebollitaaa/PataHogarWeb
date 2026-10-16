@@ -5,10 +5,11 @@ import { catalogApi } from '../api/catalog';
 import Field from '../components/ui/Field';
 import PhotoPicker from '../components/PhotoPicker';
 import AgeInput from '../components/AgeInput';
+import BreedPicker, { EMPTY_BREED_VALUE, breedPayload } from '../components/BreedPicker';
 import './publish.css';
 
 const initialForm = {
-  speciesId: '', name: '', breed: '', size: 'mediano',
+  speciesId: '', name: '', size: 'mediano',
   ageMode: 'manual', birthDate: '', ageYears: '0', ageMonths: '0', ageDays: '0',
   sex: 'macho',
   isVaccinated: false, isNeutered: false, isDewormed: false, description: '',
@@ -19,6 +20,7 @@ export default function PublishPetPage() {
   const navigate = useNavigate();
   const [species, setSpecies] = useState([]);
   const [form, setForm] = useState(initialForm);
+  const [breedValue, setBreedValue] = useState(EMPTY_BREED_VALUE);
   const [photos, setPhotos] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,6 +31,8 @@ export default function PublishPetPage() {
 
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
+    // Las razas dependen de la especie: al cambiarla, se limpia la elección.
+    if (field === 'speciesId') setBreedValue(EMPTY_BREED_VALUE);
   }
 
   async function handleSubmit(e) {
@@ -43,7 +47,7 @@ export default function PublishPetPage() {
     setLoading(true);
     try {
       const fd = new FormData();
-      Object.entries(form).forEach(([key, value]) => fd.append(key, value));
+      Object.entries({ ...form, ...breedPayload(breedValue) }).forEach(([key, value]) => fd.append(key, value));
       photos.forEach((file) => fd.append('photos', file));
 
       const { pet } = await petsApi.create(fd);
@@ -68,7 +72,7 @@ export default function PublishPetPage() {
             <PhotoPicker files={photos} onChange={setPhotos} />
           </Field>
 
-          <div className="field-row-3">
+          <div className="field-row">
             <Field label="Nombre" htmlFor="name">
               <input id="name" className="input" required value={form.name} onChange={(e) => set('name', e.target.value)} />
             </Field>
@@ -78,10 +82,14 @@ export default function PublishPetPage() {
                 {species.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
             </Field>
-            <Field label="Raza (opcional)" htmlFor="breed">
-              <input id="breed" className="input" value={form.breed} onChange={(e) => set('breed', e.target.value)} />
-            </Field>
           </div>
+
+          <BreedPicker
+            key={form.speciesId || 'sin-especie'}
+            speciesId={form.speciesId}
+            value={breedValue}
+            onChange={setBreedValue}
+          />
 
           <div className="field-row">
             <Field label="Tamaño" htmlFor="size">

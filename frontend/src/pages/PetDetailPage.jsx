@@ -128,6 +128,8 @@ export default function PetDetailPage() {
         <p className="pet-detail__subtitle">{formatAge(pet.ageYears, pet.ageMonths, pet.ageDays)}</p>
 
         <div className="pet-detail__badges">
+          {pet.isPureBreed && <span className="badge badge-primary">Pura raza</span>}
+          {pet.isCrossBreed && <span className="badge badge-primary">Cruza</span>}
           {pet.isVaccinated && <span className="badge badge-primary">Vacunado</span>}
           {pet.isNeutered && <span className="badge badge-primary">Castrado/esterilizado</span>}
           {pet.isDewormed && <span className="badge badge-primary">Desparasitado</span>}

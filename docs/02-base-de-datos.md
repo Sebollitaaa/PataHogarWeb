@@ -96,7 +96,10 @@ Publicaciones de mascotas.
 | `owner_id` | INT UNSIGNED | NOT NULL, FK → `users.id` (CASCADE) | Propietario. |
 | `species_id` | INT UNSIGNED | NOT NULL, FK → `species.id` (RESTRICT) | Especie. |
 | `name` | VARCHAR(100) | NOT NULL | Nombre. |
-| `breed` | VARCHAR(100) | NULL | Raza. |
+| `breed` | VARCHAR(255) | NULL | Raza en texto, tal como se muestra ("Dálmata", "Dálmata cruza con Golden Retriever", "Mestizo"). Se mantiene por compatibilidad con las aplicaciones móvil y de escritorio. |
+| `breed_id` | INT UNSIGNED | NULL, FK → `breeds.id` (SET NULL) | Raza principal elegida del catálogo. |
+| `cross_breed_id` | INT UNSIGNED | NULL, FK → `breeds.id` (SET NULL) | Segunda raza si es una cruza. |
+| `is_pure_breed` | TINYINT(1) | NOT NULL, default 0 | `1` solo si tiene una raza concreta del catálogo y no es cruza ni mestizo. |
 | `size` | ENUM(`pequeno`,`mediano`,`grande`) | NOT NULL | Tamaño. |
 | `sex` | ENUM(`macho`,`hembra`) | NOT NULL | Sexo. |
 | `age_mode` | ENUM(`birth_date`,`manual`) | NOT NULL, default `manual` | Modo de carga de la edad. |
@@ -110,12 +113,32 @@ Publicaciones de mascotas.
 | `contact_whatsapp` | VARCHAR(30) | NULL | Contacto opcional. |
 | `contact_email` | VARCHAR(190) | NULL | Contacto opcional. |
 
-Índices: `species_id`, `status`, `owner_id`, `(latitude, longitude)`.
+Índices: `species_id`, `status`, `owner_id`, `(latitude, longitude)`, `is_pure_breed`, `breed_id`, `cross_breed_id`.
 
 Notas:
 
 - **Edad:** con `age_mode = manual` se almacenan los valores ingresados sin normalizar. Con `birth_date` se almacena la fecha y los campos de edad son una instantánea; la edad efectiva se recalcula al serializar la entidad.
 - **Ubicación:** se copia de la ubicación efectiva del propietario en el momento de la publicación y no se actualiza posteriormente.
+- **Raza:** `breed_id` / `cross_breed_id` / `is_pure_breed` se calculan en el servidor al crear o editar (`breedCatalogService.resolveBreedFields`). Si el cliente envía solo texto en `breed`, se intenta reconocer contra el catálogo (por nombre o alias); si no coincide, se conserva como texto libre con `breed_id = NULL` e `is_pure_breed = 0`.
+
+### `breeds`
+
+Catálogo de razas por especie, usado para el autocompletado y los filtros.
+
+| Columna | Tipo | Restricciones | Descripción |
+|---|---|---|---|
+| `id` | INT UNSIGNED | PK, AI | |
+| `species_id` | INT UNSIGNED | NOT NULL, FK → `species.id` (CASCADE) | Especie a la que pertenece. |
+| `name` | VARCHAR(100) | NOT NULL | Nombre como se dice en Argentina. |
+| `slug` | VARCHAR(120) | NOT NULL | Identificador normalizado. UNIQUE junto con `species_id`. |
+| `aliases` | VARCHAR(500) | NOT NULL, default `''` | Otros nombres de búsqueda separados por coma ("Poodle" para Caniche). |
+| `is_generic` | TINYINT(1) | NOT NULL, default 0 | `1` para la opción "Mestizo / sin raza definida" de cada especie. |
+| `wiki_title` | VARCHAR(150) | NULL | Artículo de Wikipedia del que se obtiene la miniatura. |
+| `image_url` | VARCHAR(255) | NULL | Miniatura local (`/uploads/breeds/<id>.jpg`). |
+| `image_source_url` | VARCHAR(400) | NULL | Artículo de origen de la imagen (atribución). |
+| `image_checked_at` | TIMESTAMP | NULL | Último intento de descarga; evita reintentar a diario las razas sin foto. |
+
+El contenido del catálogo vive en `backend/src/db/data/breeds.js` y se sincroniza con la tabla en la migración y en cada inicio del servidor (`INSERT … ON DUPLICATE KEY UPDATE`), por lo que agregar o corregir una raza solo requiere editar ese archivo.
 
 ### `pet_photos`
 
@@ -310,6 +333,7 @@ Ubicación: `backend/src/db/migrations`. Se aplican en orden cronológico (`npm 
 | `20260916190000_remove_email_verification_system` | Elimina estructuras de un mecanismo de verificación descartado (tabla `verification_codes` y columnas asociadas de `users`) en bases que las contuvieran. |
 | `20260916200000_create_verification_requests` | Crea `verification_requests` y `verification_documents`. |
 | `20261015120000_add_email_verification` | Agrega `users.email_verified_at` (las cuentas existentes se marcan como verificadas) y crea `email_codes`. |
+| `20261016120000_create_breeds` | Crea `breeds`, agrega `pets.breed_id`, `pets.cross_breed_id` e `is_pure_breed`, amplía `pets.breed` a 255 caracteres, carga el catálogo y vincula las razas escritas a mano en publicaciones existentes. |
 | `20260916210000_add_verification_badge_system` | Agrega `users.is_verified_organization`, `verification_requests.user_notified_at` y los tipos de notificación `verification_approved` y `verification_rejected`. |
 
 ## 2.6 Datos iniciales (*seeds*)

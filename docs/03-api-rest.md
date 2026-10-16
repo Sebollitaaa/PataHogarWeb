@@ -75,7 +75,12 @@ Los endpoints paginados aceptan `page` (≥ 1) y `pageSize` y responden:
 {
   "id": 12, "name": "Peter",
   "species": { "id": 2, "name": "Gato", "slug": "gato" },
-  "breed": null, "size": "pequeno", "sex": "macho",
+  "breed": "Dálmata cruza con Golden Retriever",
+  "breedId": 55, "crossBreedId": 69,
+  "breedInfo": { "id": 55, "name": "Dálmata", "imageUrl": "/uploads/breeds/55.jpg", "isGeneric": false },
+  "crossBreedInfo": { "id": 69, "name": "Golden Retriever", "imageUrl": "/uploads/breeds/69.jpg" },
+  "isCrossBreed": true, "isPureBreed": false,
+  "size": "pequeno", "sex": "macho",
   "ageMode": "manual", "birthDate": null, "ageYears": 0, "ageMonths": 1, "ageDays": 5,
   "isVaccinated": true, "isNeutered": false, "isDewormed": true,
   "description": "…", "status": "disponible",
@@ -88,7 +93,7 @@ Los endpoints paginados aceptan `page` (≥ 1) y `pageSize` y responden:
 }
 ```
 
-`distanceKm` solo se incluye en búsquedas con coordenadas. Con `ageMode = birth_date`, `ageYears/Months/Days` se recalculan en cada respuesta.
+`breed` conserva el texto de siempre (las aplicaciones existentes no cambian); los campos `breedId`, `crossBreedId`, `breedInfo`, `crossBreedInfo`, `isCrossBreed` e `isPureBreed` son los nuevos. `distanceKm` solo se incluye en búsquedas con coordenadas. Con `ageMode = birth_date`, `ageYears/Months/Days` se recalculan en cada respuesta.
 
 ## 3.3 Autenticación — `/auth`
 
@@ -143,6 +148,9 @@ Respuesta: `{ user }`.
 | GET | `/cities` | 🔓 | `{ cities: [{ id, name, province, latitude, longitude }] }` |
 | GET | `/cities/search?q=` | 🔓 | `{ cities: [{ georefId, name, province, latitude, longitude }] }` (mínimo 2 caracteres; consulta Georef) |
 | GET | `/species` | 🔓 | `{ species: [{ id, name, slug }] }` |
+| GET | `/breeds` | 🔓 | `{ breeds: [{ id, name, isGeneric, imageUrl, species: { id, name, slug } }] }` |
+
+`GET /breeds` acepta `q` (nombre o alias, sin distinguir tildes ni mayúsculas; primero las que empiezan con el texto), `speciesId` (limita a una especie), `includeGeneric=false` (oculta "Mestizo / sin raza definida") y `limit` (1–60, por defecto 15). Sin `q` y con `speciesId` devuelve el listado alfabético de esa especie.
 
 ## 3.5 Mascotas — `/pets`
 
@@ -156,7 +164,9 @@ Respuesta: `{ user }`.
 | `minAgeYears`, `maxAgeYears` | int ≥ 0 | Rango sobre `age_years`. |
 | `isVaccinated`, `isNeutered`, `isDewormed` | `true` \| `false` | |
 | `status` | enum de estado | Por defecto `disponible`. |
-| `q` | string (≤ 120) | Coincidencia parcial en nombre o raza. |
+| `q` | string (≤ 120) | Coincidencia parcial en nombre, raza o alias de raza ("poodle" encuentra Caniche). |
+| `breedId` | int | Mascotas de esa raza, incluyendo las cruzas que la tengan como primera o segunda raza. |
+| `pureBreed` | `true` | Solo pura raza: excluye cruzas, mestizos y razas escritas a mano. |
 | `lat`, `lng` | number | Si se proveen, se calcula `distanceKm` y se ordena por cercanía. |
 | `maxDistanceKm` | number (1–20000) | Filtra por distancia máxima (requiere `lat`/`lng`). |
 | `page`, `pageSize` | int | `pageSize` máx. 60. |
@@ -175,7 +185,9 @@ Respuesta: `{ pets: [pet], pagination }`.
 |---|---|
 | `speciesId` | int ≥ 1 |
 | `name` | 1–100 caracteres |
-| `breed` | opcional, ≤ 100 |
+| `breedId` | opcional, int. Raza del catálogo; debe corresponder a `speciesId` (`422` si no). |
+| `crossBreedId` | opcional, int. Segunda raza de una cruza; requiere `breedId`, debe ser distinta y de la misma especie, y ninguna de las dos puede ser "Mestizo". |
+| `breed` | opcional, ≤ 100. Texto libre (raza fuera del catálogo); se ignora si se envía `breedId`. Si coincide con el catálogo se vincula solo. |
 | `size` | `pequeno` \| `mediano` \| `grande` |
 | `sex` | `macho` \| `hembra` |
 | `ageMode` | `birth_date` \| `manual` |
@@ -192,7 +204,7 @@ Respuesta `201`: `{ pet }`.
 `{ pet }` · `404` si no existe.
 
 ### `PATCH /pets/:id` 🔐 (propietario o admin)
-Acepta los mismos campos que la creación (todos opcionales, excepto fotos). Respuesta `{ pet }`.
+Acepta los mismos campos que la creación (todos opcionales, excepto fotos). Si se envía alguno de `breed`, `breedId` o `crossBreedId` se recalcula la raza completa; si cambia `speciesId` sin indicar raza, la raza anterior se descarta. Respuesta `{ pet }`.
 
 ### `PATCH /pets/:id/status` 🔐
 Cuerpo `{ status }`.

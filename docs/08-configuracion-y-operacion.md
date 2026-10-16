@@ -63,6 +63,20 @@ npm run migrate    # crea el esquema
 npm run seed       # carga especies y ciudades (solo en bases nuevas)
 ```
 
+### Catálogo de razas y miniaturas
+
+La migración `20261016120000_create_breeds` carga el catálogo (unas 540 razas de perros, gatos, conejos, aves, roedores, peces, reptiles y otros). No requiere pasos adicionales: si la migración corre antes de cargar las especies (base nueva), el catálogo se completa solo en el primer inicio del servidor.
+
+Las miniaturas **no se guardan en Git**: al iniciar, el backend las descarga en segundo plano desde Wikipedia hacia `backend/uploads/breeds/` (96 × 96 px, unos 2 MB en total) y vuelve a descargar las que falten si se borra esa carpeta. Si no hay conexión a internet el sistema funciona igual y muestra un ícono genérico; se reintenta en el siguiente inicio.
+
+| Comando (desde `backend/`) | Efecto |
+|---|---|
+| `npm run breeds:sync` | Sincroniza el catálogo con `src/db/data/breeds.js` y descarga las miniaturas pendientes. |
+| `npm run breeds:sync -- --force` | Reintenta también las razas que habían quedado sin foto. |
+| `npm run breeds:credits` | Regenera `docs/09-atribuciones-imagenes-razas.md`. |
+
+Para agregar una raza se edita `backend/src/db/data/breeds.js` (una línea: `Nombre | Artículo de Wikipedia | alias`) y se reinicia el backend.
+
 ## 8.4 Modos de ejecución
 
 | Modo | Comandos | Resultado |
@@ -105,6 +119,7 @@ El directorio `backend/uploads` se crea en tiempo de ejecución y no forma parte
 | La interfaz no carga datos / errores de CORS | `CLIENT_URL` no incluye el origen del navegador. | Agregar el origen (esquema, host y puerto exactos). |
 | Las imágenes no se muestran | `VITE_SOCKET_URL` ausente o incorrecta en desarrollo. | Apuntar al origen del backend. |
 | No se reciben mensajes ni notificaciones en vivo | WebSocket sin autenticar o `VITE_SOCKET_URL` incorrecta. | Verificar sesión iniciada y la URL del backend. |
+| Las razas aparecen sin foto | Sin conexión a Wikipedia al iniciar, o límite de consultas. | Ejecutar `npm run breeds:sync` con conexión; también se reintenta al reiniciar. |
 | Las ciudades no sugieren resultados | La API Georef no responde (sin conexión). | Verificar conectividad; el sistema continúa operando sin sugerencias. |
 | Las aprobaciones del cliente de escritorio no se reflejan | Backend detenido o bases de datos distintas. | Iniciar el backend y confirmar que ambos apuntan a la misma base. |
 | `The migration directory is corrupt` | Falta el archivo de una migración registrada. | Restaurar el archivo de la migración correspondiente. |

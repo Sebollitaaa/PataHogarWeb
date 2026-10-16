@@ -282,3 +282,30 @@
     align-items: flex-start;
   }
 }
+
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+.active-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 12px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-soft, var(--color-surface-alt));
+  border: 1px solid var(--color-border);
+  font-size: 0.85rem;
+}
+.active-filter-chip button {
+  border: none;
+  background: var(--color-surface);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+  line-height: 1;
+  color: var(--color-text-muted);
+}

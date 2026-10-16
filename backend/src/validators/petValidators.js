@@ -6,6 +6,8 @@ const createPetValidator = [
   body('speciesId').isInt({ min: 1 }).withMessage('Elegí una especie válida.'),
   body('name').trim().isLength({ min: 1, max: 100 }).withMessage('El nombre de la mascota es obligatorio.'),
   body('breed').optional({ checkFalsy: true }).trim().isLength({ max: 100 }),
+  body('breedId').optional({ checkFalsy: true }).isInt({ min: 1 }).withMessage('La raza no es válida.'),
+  body('crossBreedId').optional({ checkFalsy: true }).isInt({ min: 1 }).withMessage('La segunda raza no es válida.'),
   body('size').isIn(['pequeno', 'mediano', 'grande']).withMessage('Tamaño inválido.'),
   body('ageMode').isIn(['birth_date', 'manual']).withMessage('Elegí cómo cargar la edad.'),
   body('birthDate')
@@ -29,6 +31,8 @@ const updatePetValidator = [
   body('speciesId').optional().isInt({ min: 1 }),
   body('name').optional().trim().isLength({ min: 1, max: 100 }),
   body('breed').optional({ checkFalsy: true }).trim().isLength({ max: 100 }),
+  body('breedId').optional({ checkFalsy: true }).isInt({ min: 1 }),
+  body('crossBreedId').optional({ checkFalsy: true }).isInt({ min: 1 }),
   body('size').optional().isIn(['pequeno', 'mediano', 'grande']),
   body('ageMode').optional().isIn(['birth_date', 'manual']),
   body('birthDate')
@@ -65,6 +69,8 @@ const searchPetsValidator = [
   query('isDewormed').optional().isIn(['true', 'false']),
   query('status').optional().isIn(['disponible', 'en_proceso', 'adoptada', 'desactualizada']),
   query('q').optional().trim().isLength({ max: 120 }),
+  query('breedId').optional().isInt({ min: 1 }),
+  query('pureBreed').optional().isIn(['true', 'false']),
   query('lat').optional().isFloat({ min: -90, max: 90 }),
   query('lng').optional().isFloat({ min: -180, max: 180 }),
   query('maxDistanceKm').optional().isFloat({ min: 1, max: 20000 }),

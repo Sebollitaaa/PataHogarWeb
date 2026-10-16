@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import PetCard from '../components/PetCard';
 import FilterSidebar from '../components/FilterSidebar';
 import CityAutocomplete from '../components/CityAutocomplete';
+import BreedAutocomplete from '../components/BreedAutocomplete';
 import Avatar from '../components/Avatar';
 import VerifiedBadge from '../components/VerifiedBadge';
 import { PawIcon, PlusIcon, SearchIcon, UserIcon } from '../components/icons/Icons';
@@ -17,6 +18,7 @@ import './home.css';
 const EMPTY_FILTERS = {
   q: '', speciesId: '', sex: '', size: '', minAgeYears: '', maxAgeYears: '',
   isVaccinated: false, isNeutered: false, isDewormed: false,
+  breed: null, pureBreed: false,
   city: null, maxDistanceKm: '100', page: 1,
 };
 
@@ -77,6 +79,8 @@ export default function HomePage() {
     try {
       const params = {
         q: filters.q || undefined,
+        breedId: filters.breed?.id,
+        pureBreed: filters.pureBreed || undefined,
         speciesId: filters.speciesId || undefined,
         sex: filters.sex || undefined,
         size: filters.size || undefined,
@@ -130,7 +134,29 @@ export default function HomePage() {
       }
       return;
     }
-    setFilters((f) => ({ ...f, q: searchDraft, page: 1 }));
+    setFilters((f) => ({ ...f, q: searchDraft, breed: null, page: 1 }));
+  }
+
+  // Al elegir una raza de la lista se filtra por esa raza (incluye sus cruzas).
+  function handleBreedPick(breed) {
+    setSearchDraft('');
+    setFilters((f) => ({
+      ...f,
+      breed,
+      q: '',
+      // Si la raza es de otra especie que la seleccionada, se pasa a la de la raza.
+      speciesId: breed.species.id,
+      page: 1,
+    }));
+  }
+
+  function selectSpecies(speciesId) {
+    setFilters((f) => ({
+      ...f,
+      speciesId,
+      breed: f.breed && String(f.breed.species.id) !== String(speciesId) ? null : f.breed,
+      page: 1,
+    }));
   }
 
   function switchMode(mode) {
@@ -161,10 +187,15 @@ export default function HomePage() {
               <SearchIcon size={18} />
               {searchMode === 'mascotas' ? (
                 <>
-                  <input
-                    placeholder="Buscar por raza, nombre…"
+                  <BreedAutocomplete
                     value={searchDraft}
-                    onChange={(e) => setSearchDraft(e.target.value)}
+                    onChange={setSearchDraft}
+                    onSelect={handleBreedPick}
+                    speciesId={filters.speciesId ? Number(filters.speciesId) : undefined}
+                    includeGeneric={false}
+                    openOnFocusWithoutText={false}
+                    inputClassName=""
+                    placeholder={filters.speciesId ? 'Buscar raza o nombre…' : 'Buscar por raza, nombre…'}
                   />
                   <div className="hero__searchbar-city">
                     <CityAutocomplete
@@ -243,7 +274,7 @@ export default function HomePage() {
         <div className="category-pills">
           <button
             className={!filters.speciesId ? 'category-pill category-pill--active' : 'category-pill'}
-            onClick={() => setFilters((f) => ({ ...f, speciesId: '', page: 1 }))}
+            onClick={() => selectSpecies('')}
           >
             <PawIcon size={18} /> Todos
           </button>
@@ -254,7 +285,7 @@ export default function HomePage() {
               <button
                 key={s.id}
                 className={active ? 'category-pill category-pill--active' : 'category-pill'}
-                onClick={() => setFilters((f) => ({ ...f, speciesId: active ? '' : s.id, page: 1 }))}
+                onClick={() => selectSpecies(active ? '' : s.id)}
               >
                 <Icon size={18} /> {s.name}
               </button>
@@ -279,10 +310,29 @@ export default function HomePage() {
           <FilterSidebar
             filters={filters}
             onChange={(f) => setFilters({ ...f, page: 1 })}
-            onReset={() => setFilters({ ...EMPTY_FILTERS, city: filters.city, speciesId: filters.speciesId })}
+            onReset={() => {
+              setSearchDraft('');
+              setFilters({ ...EMPTY_FILTERS, city: filters.city, speciesId: filters.speciesId });
+            }}
           />
 
           <div>
+            {(filters.breed || filters.q) && (
+              <div className="active-filters">
+                {filters.breed && (
+                  <span className="active-filter-chip">
+                    Raza: <strong>{filters.breed.name}</strong>
+                    <button type="button" aria-label="Quitar raza" onClick={() => setFilters((f) => ({ ...f, breed: null, page: 1 }))}>×</button>
+                  </span>
+                )}
+                {filters.q && (
+                  <span className="active-filter-chip">
+                    Búsqueda: <strong>{filters.q}</strong>
+                    <button type="button" aria-label="Quitar búsqueda" onClick={() => { setSearchDraft(''); setFilters((f) => ({ ...f, q: '', page: 1 })); }}>×</button>
+                  </span>
+                )}
+              </div>
+            )}
             <div className="home-results-header">
               <h2>Mascotas en adopción</h2>
               {!loading && (

@@ -1,0 +1,92 @@
+.breed-autocomplete {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.breed-autocomplete__list {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  min-width: 240px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.breed-autocomplete__list button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  background: none;
+  text-align: left;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: var(--color-text);
+}
+.breed-autocomplete__list button:hover,
+.breed-autocomplete__list button.is-active {
+  background: var(--color-surface-alt);
+}
+
+.breed-autocomplete__thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-alt);
+  color: var(--color-text-faint);
+}
+.breed-autocomplete__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.breed-autocomplete__name {
+  flex: 1;
+  min-width: 0;
+}
+
+.breed-autocomplete__species {
+  margin-left: auto;
+  font-size: 0.76rem;
+  color: var(--color-text-faint);
+  flex-shrink: 0;
+}
+
+.breed-autocomplete__free .breed-autocomplete__name {
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+.breed-autocomplete__hint {
+  padding: 10px;
+  font-size: 0.82rem;
+  color: var(--color-text-faint);
+}
+
+/* Barra de búsqueda del inicio: el campo va sin borde dentro de la píldora. */
+.hero__searchbar .breed-autocomplete {
+  flex: 1;
+}
+.hero__searchbar .breed-autocomplete input {
+  width: 100%;
+}

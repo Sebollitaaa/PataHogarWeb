@@ -14,6 +14,7 @@ Esta carpeta contiene la especificación técnica del sistema. Está dirigida a 
 | 6 | [Seguridad](06-seguridad.md) | Controles implementados y limitaciones conocidas. |
 | 7 | [Integración con el cliente de escritorio](07-integracion-cliente-escritorio.md) | Contrato de datos para la gestión de solicitudes de verificación. |
 | 8 | [Configuración y operación](08-configuracion-y-operacion.md) | Variables de entorno, modos de ejecución, mantenimiento y resolución de problemas. |
+| 9 | [Atribuciones de imágenes de razas](09-atribuciones-imagenes-razas.md) | Origen y licencia de las miniaturas de razas. |
 
 ## Convenciones
 

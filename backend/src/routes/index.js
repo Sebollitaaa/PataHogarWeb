@@ -9,6 +9,7 @@ router.get('/health', (req, res) => {
 router.use('/auth', require('./authRoutes'));
 router.use('/cities', require('./cityRoutes'));
 router.use('/species', require('./speciesRoutes'));
+router.use('/breeds', require('./breedRoutes'));
 router.use('/pets', require('./petRoutes'));
 router.use('/favorites', require('./favoriteRoutes'));
 router.use('/conversations', require('./conversationRoutes'));
