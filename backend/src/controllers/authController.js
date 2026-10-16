@@ -164,6 +164,47 @@ async function resetPassword(req, res) {
   res.json({ message: 'Contraseña actualizada. Ya podés iniciar sesión con la nueva.' });
 }
 
+function maskEmail(email) {
+  const [local, domain] = String(email).split('@');
+  return `${local.slice(0, 2)}${'*'.repeat(Math.max(1, local.length - 2))}@${domain}`;
+}
+
+/**
+ * Cambio de contraseña con la sesión iniciada, paso 1: envía un código al correo
+ * de la cuenta. Es el mismo mecanismo que "Olvidé mi contraseña", pero sin pedir el correo.
+ */
+async function requestPasswordChangeCode(req, res) {
+  const user = await userRepository.findById(req.user.id);
+
+  const wait = await emailCodeService.cooldownRemaining(user.id, PURPOSES.RESET_PASSWORD);
+  if (wait > 0) throw new ApiError(429, `Esperá ${wait} segundos antes de pedir otro código.`);
+
+  const emailSent = await emailCodeService.issueAndSend(user, PURPOSES.RESET_PASSWORD);
+  res.json({ message: 'Te enviamos un código de 6 dígitos a tu correo.', email: maskEmail(user.email), emailSent });
+}
+
+/**
+ * Paso 2: con el código y la nueva contraseña se cambia. La sesión actual
+ * sigue abierta; las de los demás dispositivos se cierran.
+ */
+async function changePassword(req, res) {
+  const { code, newPassword } = req.body;
+  const user = await userRepository.findById(req.user.id);
+
+  await emailCodeService.consume(user, PURPOSES.RESET_PASSWORD, code);
+  await userRepository.update(user.id, { password_hash: await bcrypt.hash(newPassword, BCRYPT_ROUNDS) });
+
+  const token = readRefreshToken(req);
+  const current = token ? await refreshTokenRepository.findActiveByHash(tokenService.hashRefreshToken(token)) : null;
+  if (current && current.user_id === user.id) {
+    await refreshTokenRepository.revokeAllForUserExcept(user.id, current.id);
+  } else {
+    await refreshTokenRepository.revokeAllForUser(user.id);
+  }
+
+  res.json({ message: 'Contraseña actualizada. Cerramos tu sesión en los otros dispositivos.' });
+}
+
 async function issueSession(res, user, rememberMe, req) {
   const accessToken = tokenService.signAccessToken(user);
   const { token, tokenHash, expiresAt, days } = tokenService.generateRefreshToken(rememberMe);
@@ -253,6 +294,8 @@ module.exports = {
   resendVerification,
   forgotPassword,
   resetPassword,
+  requestPasswordChangeCode,
+  changePassword,
   login,
   refresh,
   logout,

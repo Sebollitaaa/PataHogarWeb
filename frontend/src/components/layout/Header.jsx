@@ -124,9 +124,10 @@ function UserMenu({ user, onLogout }) {
       </button>
       {open && (
         <div className="dropdown__panel">
+          <Link to={`/usuarios/${user.id}`} className="dropdown__link" onClick={() => setOpen(false)}>Mi perfil</Link>
+          <Link to="/perfil" className="dropdown__link" onClick={() => setOpen(false)}>Mi cuenta</Link>
           <Link to="/mis-publicaciones" className="dropdown__link" onClick={() => setOpen(false)}>Mis publicaciones</Link>
           <Link to="/adoptadas" className="dropdown__link" onClick={() => setOpen(false)}>Adoptadas</Link>
-          <Link to="/perfil" className="dropdown__link" onClick={() => setOpen(false)}>Mi perfil</Link>
           {user.role === 'admin' && (
             <Link to="/admin" className="dropdown__link dropdown__link--accent" onClick={() => setOpen(false)}>
               <ShieldIcon size={16} /> Administración

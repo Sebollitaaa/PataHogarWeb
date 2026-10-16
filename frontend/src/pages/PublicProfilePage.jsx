@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { usersApi } from '../api/users';
 import PetCard from '../components/PetCard';
 import Avatar from '../components/Avatar';
@@ -12,6 +13,7 @@ import './public-profile.css';
 
 export default function PublicProfilePage() {
   const { id } = useParams();
+  const { user: me } = useAuth();
   const [data, setData] = useState(null);
   const [notFound, setNotFound] = useState(false);
 
@@ -45,6 +47,9 @@ export default function PublicProfilePage() {
             <span>Miembro desde {memberSince(user.memberSince)}</span>
           </div>
         </div>
+        {me && String(me.id) === String(user.id) && (
+          <Link to="/perfil" className="btn btn-outline btn-sm public-profile__edit">Ir a Mi cuenta</Link>
+        )}
         <div className="public-profile__stats">
           <div>
             <strong>{pets.length}</strong>

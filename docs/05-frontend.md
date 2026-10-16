@@ -63,7 +63,7 @@ El orden es significativo: `SocketProvider` depende de `AuthProvider`, y `Notifi
 | `/favoritos` | `FavoritesPage` | Autenticado |
 | `/mensajes`, `/mensajes/:conversationId` | `MessagesPage` | Autenticado |
 | `/notificaciones` | `NotificationsPage` | Autenticado |
-| `/perfil` | `ProfilePage` | Autenticado |
+| `/perfil` | `ProfilePage` ("Mi cuenta": datos personales y cambio de contraseña con código por correo) | Autenticado |
 | `/admin` | `AdminPage` | Rol `admin` |
 | `*` | `NotFoundPage` | Público |
 
@@ -101,7 +101,8 @@ Módulos por recurso: `auth`, `pets`, `catalog`, `favorites`, `conversations`, `
 | `MessagesPage` | Lista de conversaciones agrupadas por contraparte y hilo de mensajes con recepción en tiempo real. |
 | `NotificationsPage` | Listado paginado de notificaciones. |
 | `ProfilePage` | Edición de foto, teléfono, ciudad y contraseña. |
-| `PublicProfilePage` | Perfil público con publicaciones e insignia de verificación. |
+| `PublicProfilePage` | Perfil público con publicaciones e insignia de verificación ("Mi perfil" del menú apunta a `/usuarios/:id` propio). |
+| `ChangePasswordCard` | Tarjeta de seguridad de "Mi cuenta": pide el código por correo y la nueva contraseña. |
 | `RequestVerificationPage` | Formulario de solicitud de verificación con carga múltiple de documentos. |
 | `AdminPage` | Gestión de usuarios y auditoría. |
 | `LoginPage`, `RegisterPage` | Autenticación. |

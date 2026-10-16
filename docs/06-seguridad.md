@@ -9,7 +9,8 @@
 | Recuperación de contraseña | Código de un solo uso enviado por correo; respuestas genéricas que no revelan si el correo existe; al restablecer se revocan todas las sesiones. |
 | Sesiones | *Access token* JWT de 15 minutos mantenido solo en memoria; *refresh token* aleatorio de 64 bytes, persistido como hash SHA-256 y entregado en cookie `httpOnly` (`secure` en producción, `sameSite=lax`, `path=/api/auth`). |
 | Rotación | Cada renovación revoca el *refresh token* utilizado y emite uno nuevo. |
-| Revocación | El cambio de contraseña y la suspensión revocan todas las sesiones del usuario. |
+| Cambio de contraseña con sesión iniciada | Exige un código de un solo uso enviado al correo de la cuenta (no basta con tener la sesión abierta). Conserva la sesión actual y revoca las de los demás dispositivos. |
+| Revocación | El restablecimiento de contraseña y la suspensión revocan todas las sesiones del usuario; el cambio con sesión iniciada revoca las demás. |
 | Estado de cuenta | `requireAuth` consulta la base de datos en cada petición: una cuenta suspendida o eliminada pierde acceso de inmediato. |
 | Autorización | Verificación de rol en servidor (`requireRole`) y de propiedad del recurso (`assertOwnerOrAdmin`). |
 | Inyección SQL | Consultas parametrizadas mediante Knex; los fragmentos SQL crudos usan parámetros enlazados. |

@@ -39,10 +39,20 @@ const resetPasswordValidator = [
   passwordRule(body('newPassword')),
 ];
 
+const changePasswordValidator = [
+  codeRule(),
+  passwordRule(body('newPassword')),
+  body('confirmNewPassword').custom((value, { req }) => {
+    if (value !== req.body.newPassword) throw new Error('Las contraseñas no coinciden.');
+    return true;
+  }),
+];
+
 module.exports = {
   registerValidator,
   loginValidator,
   verifyEmailValidator,
   emailOnlyValidator,
   resetPasswordValidator,
+  changePasswordValidator,
 };

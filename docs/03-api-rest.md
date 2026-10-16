@@ -132,6 +132,12 @@ Cuerpo: `{ email }`. Envía un código para restablecer la contraseña. Respuest
 ### `POST /auth/reset-password` 🔓
 Cuerpo: `{ email, code, newPassword }` (la contraseña cumple la política de seguridad). Cambia la contraseña y revoca todas las sesiones. Errores: `400` código incorrecto o vencido · `422` contraseña no válida.
 
+### `POST /auth/password-code` 🔐
+Cambio de contraseña con la sesión iniciada, paso 1. Envía un código de 6 dígitos al correo de la cuenta (sin cuerpo). Respuesta: `{ message, email, emailSent }` con el correo enmascarado (`ca****@gmail.com`). `429` si se pidió otro código hace menos de `EMAIL_RESEND_COOLDOWN_SECONDS`.
+
+### `POST /auth/change-password` 🔐
+Paso 2. Cuerpo: `{ code, newPassword, confirmNewPassword }`. No requiere la contraseña actual: el código demuestra el control del correo. Cambia la contraseña, conserva la sesión actual y revoca las de los demás dispositivos. Errores: `400` código incorrecto o vencido · `422` contraseña no válida o confirmación distinta · `429` demasiados intentos.
+
 ### `POST /auth/refresh` 🔓 (requiere cookie)
 Rota el *refresh token* y devuelve `{ accessToken, user }`. `401` si la cookie falta, está revocada o venció.
 
@@ -278,10 +284,9 @@ Todos los campos son opcionales.
 |---|---|
 | `phone` | Nuevo teléfono. |
 | `cityGeorefId`, `cityName`, `cityProvince`, `cityLat`, `cityLng` | Nueva localidad (se valida contra `verifiedLat`/`verifiedLng` si se envían). |
-| `currentPassword`, `newPassword`, `confirmNewPassword` | Cambio de contraseña (política: 8+ caracteres, mayúscula, minúscula, número y símbolo). Revoca todas las sesiones. |
 | `profilePhoto` | Imagen de perfil. |
 
-Respuesta: `{ user, passwordChanged }`.
+Respuesta: `{ user }`. La contraseña ya no se cambia por esta ruta: ver `POST /auth/password-code` y `POST /auth/change-password`.
 
 ### `GET /users/search?q=` 🔓
 Devuelve únicamente usuarios activos con `is_verified_organization = 1` cuyo nombre, apellido o nombre completo contenga `q` (mínimo 2 caracteres; máximo 20 resultados; sin distinción de mayúsculas).

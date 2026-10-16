@@ -1,15 +1,11 @@
-const bcrypt = require('bcrypt');
 const ApiError = require('../utils/ApiError');
 const userRepository = require('../models/userRepository');
 const cityRepository = require('../models/cityRepository');
-const refreshTokenRepository = require('../models/refreshTokenRepository');
 const petRepository = require('../models/petRepository');
 const locationService = require('../services/locationService');
 const imageService = require('../services/imageService');
 const { toPublicUser } = require('./authController');
 const { serializePet, groupPhotosByPet } = require('./petController');
-
-const BCRYPT_ROUNDS = 12;
 
 async function updateMe(req, res) {
   const b = req.body || {};
@@ -33,12 +29,6 @@ async function updateMe(req, res) {
     changes.location_source = location.locationSource;
   }
 
-  if (b.newPassword) {
-    const matches = await bcrypt.compare(b.currentPassword, user.password_hash);
-    if (!matches) throw new ApiError(401, 'La contraseña actual no es correcta.');
-    changes.password_hash = await bcrypt.hash(b.newPassword, BCRYPT_ROUNDS);
-  }
-
   if (req.file) {
     const urls = await imageService.processImage(req.file.buffer, 'users', user.id);
     changes.profile_photo_url = urls.medium;
@@ -48,13 +38,8 @@ async function updateMe(req, res) {
     await userRepository.update(user.id, changes);
   }
 
-  if (b.newPassword) {
-    // Por seguridad, forzamos a re-loguearse en todos los dispositivos al cambiar la contraseña.
-    await refreshTokenRepository.revokeAllForUser(user.id);
-  }
-
   const updated = await userRepository.findPublicById(user.id);
-  res.json({ user: toPublicUser(updated), passwordChanged: Boolean(b.newPassword) });
+  res.json({ user: toPublicUser(updated) });
 }
 
 async function getPublicProfile(req, res) {

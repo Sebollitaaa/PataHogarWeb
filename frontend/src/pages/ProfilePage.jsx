@@ -1,12 +1,11 @@
 import { useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usersApi } from '../api/users';
 import { getBrowserLocation } from '../utils/geolocation';
 import Field from '../components/ui/Field';
 import CityAutocomplete from '../components/CityAutocomplete';
-import PasswordInput from '../components/PasswordInput';
-import PasswordRequirements from '../components/PasswordRequirements';
-import { isPasswordValid } from '../utils/passwordRules';
+import ChangePasswordCard from '../components/ChangePasswordCard';
 import { CameraIcon, UserIcon } from '../components/icons/Icons';
 import { API_ORIGIN } from '../api/origin';
 import './profile.css';
@@ -20,10 +19,6 @@ export default function ProfilePage() {
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(user.profilePhotoUrl ? `${API_ORIGIN}${user.profilePhotoUrl}` : null);
   const fileInputRef = useRef(null);
-
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -40,15 +35,6 @@ export default function ProfilePage() {
     e.preventDefault();
     setError('');
     setSuccess('');
-
-    if (newPassword && !isPasswordValid(newPassword)) {
-      setError('La nueva contraseña no cumple con todos los requisitos de seguridad.');
-      return;
-    }
-    if (newPassword && newPassword !== confirmNewPassword) {
-      setError('Las contraseñas nuevas no coinciden.');
-      return;
-    }
 
     setLoading(true);
     try {
@@ -72,20 +58,11 @@ export default function ProfilePage() {
 
       if (photoFile) fd.append('profilePhoto', photoFile);
 
-      if (newPassword) {
-        fd.append('currentPassword', currentPassword);
-        fd.append('newPassword', newPassword);
-        fd.append('confirmNewPassword', confirmNewPassword);
-      }
-
-      const { user: updated, passwordChanged } = await usersApi.updateMe(fd);
+      const { user: updated } = await usersApi.updateMe(fd);
       setUser(updated);
       setCity(updated.cityName ? { georefId: null, name: updated.cityName, province: updated.cityProvince } : null);
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmNewPassword('');
       setPhotoFile(null);
-      setSuccess(passwordChanged ? 'Perfil actualizado. Como cambiaste la contraseña, tu sesión en otros dispositivos se cerró.' : 'Perfil actualizado.');
+      setSuccess('Datos actualizados.');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -96,7 +73,10 @@ export default function ProfilePage() {
   return (
     <div className="container profile-page">
       <div className="card profile-card">
-        <h1>Mi perfil</h1>
+        <h1>Mi cuenta</h1>
+        <p className="profile-subtitle">
+          Tus datos personales. Así te ven los demás en <Link to={`/usuarios/${user.id}`}>tu perfil público</Link>.
+        </p>
 
         {error && <div className="alert alert-error" style={{ marginBottom: 16 }}>{error}</div>}
         {success && <div className="alert alert-success" style={{ marginBottom: 16 }}>{success}</div>}
@@ -127,24 +107,13 @@ export default function ProfilePage() {
             <CityAutocomplete id="city" value={city} onChange={setCity} />
           </Field>
 
-          <h3 className="profile-section-title">Cambiar contraseña</h3>
-          <Field label="Contraseña actual" htmlFor="currentPassword">
-            <PasswordInput id="currentPassword" required={false} autoComplete="current-password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
-          </Field>
-          <Field label="Nueva contraseña" htmlFor="newPassword">
-            <PasswordInput id="newPassword" required={false} autoComplete="new-password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-          </Field>
-          {newPassword && <PasswordRequirements value={newPassword} />}
-          <Field label="Confirmar nueva contraseña" htmlFor="confirmNewPassword"
-            error={confirmNewPassword && newPassword !== confirmNewPassword ? 'Las contraseñas no coinciden.' : undefined}>
-            <PasswordInput id="confirmNewPassword" required={false} autoComplete="new-password" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} />
-          </Field>
-
           <button className="btn btn-primary btn-block" disabled={loading} style={{ marginTop: 8 }}>
             {loading ? 'Guardando…' : 'Guardar cambios'}
           </button>
         </form>
       </div>
+
+      <ChangePasswordCard />
     </div>
   );
 }

@@ -20,4 +20,13 @@ function revokeAllForUser(userId) {
   return db('refresh_tokens').where({ user_id: userId }).whereNull('revoked_at').update({ revoked_at: db.fn.now() });
 }
 
-module.exports = { create, findActiveByHash, revoke, revokeAllForUser };
+/** Cierra todas las sesiones del usuario salvo la indicada (la que está haciendo el cambio). */
+function revokeAllForUserExcept(userId, keepId) {
+  return db('refresh_tokens')
+    .where({ user_id: userId })
+    .whereNot({ id: keepId })
+    .whereNull('revoked_at')
+    .update({ revoked_at: db.fn.now() });
+}
+
+module.exports = { create, findActiveByHash, revoke, revokeAllForUser, revokeAllForUserExcept };

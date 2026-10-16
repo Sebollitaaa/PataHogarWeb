@@ -60,7 +60,7 @@ Plataforma web de adopción de mascotas: conecta a personas que ofrecen animales
 - Favoritos.
 - **Chat en tiempo real** (WebSocket) con conversaciones por mascota, agrupadas por persona.
 - Notificaciones en tiempo real y centro de notificaciones.
-- Perfiles públicos con historial de publicaciones.
+- Perfiles públicos con historial de publicaciones; "Mi cuenta" para editar los datos y cambiar la contraseña con un código enviado por correo.
 
 **Verificación de organizaciones**
 - Solicitud de verificación para refugios, veterinarias y asociaciones, con documentación adjunta (múltiples archivos por tipo).
