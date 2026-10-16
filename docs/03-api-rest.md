@@ -235,6 +235,17 @@ Elimina la publicación y sus imágenes. Si la ejecuta un admin sobre una public
 | POST | `/favorites/:petId` | `201 { message }` (idempotente) |
 | DELETE | `/favorites/:petId` | `{ message }` |
 
+### Seguimiento de perfiles verificados — `/follows` 🔐
+
+| Método | Ruta | Respuesta |
+|---|---|---|
+| GET | `/follows` | `{ profiles: [{ id, firstName, lastName, profilePhotoUrl, isVerifiedOrganization, cityName, cityProvince, availablePets }] }` |
+| GET | `/follows/ids` | `{ ids: [int] }` — identificadores de los perfiles seguidos |
+| POST | `/follows/:userId` | `201 { message, followersCount }` (idempotente) · `422` si es el propio usuario o la cuenta no está verificada · `404` si no existe |
+| DELETE | `/follows/:userId` | `{ message, followersCount }` |
+
+Cuando un perfil verificado publica una mascota, sus seguidores reciben una notificación `followed_new_pet`.
+
 ## 3.7 Conversaciones — `/conversations` 🔐
 
 | Método | Ruta | Descripción |
@@ -301,12 +312,12 @@ Perfil público (sin correo ni teléfono):
 ```json
 {
   "user": { "id": 3, "firstName": "…", "lastName": "…", "profilePhotoUrl": null,
-            "cityName": "…", "cityProvince": "…", "isVerifiedOrganization": true, "memberSince": "…" },
+            "cityName": "…", "cityProvince": "…", "isVerifiedOrganization": true, "memberSince": "…", "followersCount": 12 },
   "pets": [ pet ]
 }
 ```
 
-`404` si el usuario no existe o está suspendido.
+`followersCount` solo se informa para perfiles verificados (`null` en el resto). `404` si el usuario no existe o está suspendido.
 
 ## 3.10 Administración — `/admin` 🛡️
 

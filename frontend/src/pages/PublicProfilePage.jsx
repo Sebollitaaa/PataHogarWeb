@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usersApi } from '../api/users';
+import { followsApi } from '../api/follows';
+import FollowButton from '../components/FollowButton';
 import PetCard from '../components/PetCard';
 import Avatar from '../components/Avatar';
 import VerifiedBadge from '../components/VerifiedBadge';
@@ -16,12 +18,25 @@ export default function PublicProfilePage() {
   const { user: me } = useAuth();
   const [data, setData] = useState(null);
   const [notFound, setNotFound] = useState(false);
+  const [following, setFollowing] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
 
   useEffect(() => {
     setData(null);
     setNotFound(false);
-    usersApi.getPublicProfile(id).then(setData).catch(() => setNotFound(true));
+    setFollowing(false);
+    usersApi.getPublicProfile(id)
+      .then((d) => {
+        setData(d);
+        setFollowersCount(d.user.followersCount || 0);
+      })
+      .catch(() => setNotFound(true));
   }, [id]);
+
+  useEffect(() => {
+    if (!me) return;
+    followsApi.ids().then((d) => setFollowing(d.ids.includes(Number(id)))).catch(() => {});
+  }, [id, me]);
 
   if (notFound) {
     return <div className="container" style={{ padding: '60px 0', textAlign: 'center' }}><p>No encontramos a este usuario.</p></div>;
@@ -30,6 +45,7 @@ export default function PublicProfilePage() {
 
   const { user, pets } = data;
   const adoptedCount = pets.filter((p) => p.status === 'adoptada').length;
+  const isMe = me && String(me.id) === String(user.id);
 
   return (
     <div className="container public-profile">
@@ -47,8 +63,18 @@ export default function PublicProfilePage() {
             <span>Miembro desde {memberSince(user.memberSince)}</span>
           </div>
         </div>
-        {me && String(me.id) === String(user.id) && (
+        {isMe && (
           <Link to="/perfil" className="btn btn-outline btn-sm public-profile__edit">Ir a Mi cuenta</Link>
+        )}
+        {!isMe && user.isVerifiedOrganization && (
+          <FollowButton
+            userId={user.id}
+            following={following}
+            onChange={(now, count) => {
+              setFollowing(now);
+              if (typeof count === 'number') setFollowersCount(count);
+            }}
+          />
         )}
         <div className="public-profile__stats">
           <div>
@@ -59,6 +85,12 @@ export default function PublicProfilePage() {
             <strong>{adoptedCount}</strong>
             <span>dadas en adopción</span>
           </div>
+          {user.isVerifiedOrganization && (
+            <div>
+              <strong>{followersCount}</strong>
+              <span>{followersCount === 1 ? 'seguidor' : 'seguidores'}</span>
+            </div>
+          )}
         </div>
       </div>
 

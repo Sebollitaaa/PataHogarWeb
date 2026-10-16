@@ -88,7 +88,7 @@ El orden es significativo: `SocketProvider` depende de `AuthProvider`, y `Notifi
 - Los errores se normalizan en `ApiError(status, message, details)`.
 - `isForm: true` envía `FormData` sin fijar `Content-Type`.
 
-Módulos por recurso: `auth`, `pets`, `catalog`, `favorites`, `conversations`, `notifications`, `users`, `admin`, `verificationRequests`. `origin.js` expone `API_ORIGIN` (prefijo de rutas de imágenes) y `SOCKET_URL`.
+Módulos por recurso: `auth`, `pets`, `catalog`, `favorites`, `follows`, `conversations`, `notifications`, `users`, `admin`, `verificationRequests`. `origin.js` expone `API_ORIGIN` (prefijo de rutas de imágenes) y `SOCKET_URL`.
 
 ## 5.7 Páginas
 
@@ -97,7 +97,8 @@ Módulos por recurso: `auth`, `pets`, `catalog`, `favorites`, `conversations`, `
 | `HomePage` | Buscador con alternancia Mascotas/Personas, filtros, grilla paginada, estadísticas. Aplica por defecto la ciudad del usuario autenticado. Las búsquedas se ejecutan con *debounce* de 300 ms. |
 | `PetDetailPage` | Galería, datos, contacto, favorito, gestión del propietario, moderación de administrador y formulario de mensaje inicial. |
 | `PublishPetPage` / `EditPetPage` | Alta y edición de publicaciones, incluida la gestión de fotos. |
-| `MyListingsPage`, `AdoptedPage`, `FavoritesPage` | Listados filtrados del usuario. |
+| `MyListingsPage`, `AdoptedPage` | Listados filtrados del usuario. |
+| `FavoritesPage` | Pestañas "Mascotas" (favoritas) y "Siguiendo" (perfiles verificados que sigue el usuario). |
 | `MessagesPage` | Lista de conversaciones agrupadas por contraparte y hilo de mensajes con recepción en tiempo real. |
 | `NotificationsPage` | Listado paginado de notificaciones. |
 | `ProfilePage` | Edición de foto, teléfono, ciudad y contraseña. |
@@ -119,6 +120,8 @@ Módulos por recurso: `auth`, `pets`, `catalog`, `favorites`, `conversations`, `
 | `PhotoPicker` | Selector de hasta 10 imágenes con vista previa. |
 | `DocumentPicker` | Selector múltiple (hasta 10) con vista previa para imágenes e indicador de archivo para PDF. |
 | `AgeInput` | Alterna entre fecha de nacimiento y edad manual. |
+| `FollowButton` | Botón Seguir / Siguiendo de los perfiles verificados. |
+| `FilterSidebar` | Panel de filtros del inicio: se oculta/muestra completo y cada grupo se pliega; muestra cuántos filtros hay aplicados. |
 | `Avatar`, `VerifiedBadge` | Foto de perfil e insignia de verificación. |
 | `ProtectedRoute` | Guardia de rutas. |
 | `ui/Field`, `ui/FullPageSpinner` | Campo de formulario e indicador de carga. |

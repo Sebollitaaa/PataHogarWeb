@@ -2,6 +2,7 @@ const ApiError = require('../utils/ApiError');
 const userRepository = require('../models/userRepository');
 const cityRepository = require('../models/cityRepository');
 const petRepository = require('../models/petRepository');
+const followRepository = require('../models/followRepository');
 const locationService = require('../services/locationService');
 const imageService = require('../services/imageService');
 const { toPublicUser } = require('./authController');
@@ -60,6 +61,7 @@ async function getPublicProfile(req, res) {
       cityProvince: profile.city_province,
       isVerifiedOrganization: Boolean(profile.is_verified_organization),
       memberSince: profile.created_at,
+      followersCount: profile.is_verified_organization ? await followRepository.countFollowers(profile.id) : null,
     },
     pets: pets.map((p) => serializePet(p, photosByPet[p.id] || [])),
   });

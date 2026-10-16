@@ -11,6 +11,8 @@ export function notificationText(n) {
       return `Te escribieron por ${petName}.`;
     case 'reply_to_inquiry':
       return `Te respondieron por ${petName}.`;
+    case 'followed_new_pet':
+      return `${n.payload?.ownerName || 'Un perfil que seguís'} publicó una mascota nueva: ${petName}.`;
     case 'verification_approved':
       return `¡Felicitaciones! Tu solicitud de verificación para "${n.payload?.organizationName || 'tu organización'}" fue aprobada.`;
     case 'verification_rejected':

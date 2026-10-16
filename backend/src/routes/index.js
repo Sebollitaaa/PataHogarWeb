@@ -12,6 +12,7 @@ router.use('/species', require('./speciesRoutes'));
 router.use('/breeds', require('./breedRoutes'));
 router.use('/pets', require('./petRoutes'));
 router.use('/favorites', require('./favoriteRoutes'));
+router.use('/follows', require('./followRoutes'));
 router.use('/conversations', require('./conversationRoutes'));
 router.use('/notifications', require('./notificationRoutes'));
 router.use('/admin', require('./adminRoutes'));

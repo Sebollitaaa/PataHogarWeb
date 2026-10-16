@@ -309,3 +309,39 @@
   line-height: 1;
   color: var(--color-text-muted);
 }
+
+.home-layout--full {
+  grid-template-columns: 1fr;
+}
+.home-results-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.filters-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.filters-toggle__count {
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: var(--radius-full);
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.people-results__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.people-results__row .people-results__item {
+  flex: 1;
+  min-width: 0;
+}

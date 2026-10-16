@@ -7,6 +7,7 @@ const adminActionRepository = require('../models/adminActionRepository');
 const locationService = require('../services/locationService');
 const imageService = require('../services/imageService');
 const breedCatalogService = require('../services/breedCatalogService');
+const followRepository = require('../models/followRepository');
 const { computeAgeFromBirthDate } = require('../utils/age');
 
 const MAX_PHOTOS = 10;
@@ -97,6 +98,25 @@ async function assertOwnerOrAdmin(pet, user) {
   }
 }
 
+/** Avisa a quienes siguen al perfil verificado que publicó una mascota nueva. */
+async function notifyFollowers(io, pet) {
+  if (!pet.owner_is_verified_organization) return;
+  try {
+    const followerIds = await followRepository.findFollowerIds(pet.owner_id);
+    const ownerName = `${pet.owner_first_name} ${pet.owner_last_name}`.trim();
+    for (const userId of followerIds) {
+      await notificationService.create(io, {
+        user_id: userId,
+        type: 'followed_new_pet',
+        payload: { petId: pet.id, petName: pet.name, ownerId: pet.owner_id, ownerName },
+      });
+    }
+  } catch (err) {
+    // Un fallo al avisar no debe impedir que la publicación se cree.
+    console.error('No se pudo notificar a los seguidores:', err.message);
+  }
+}
+
 async function create(req, res) {
   const files = req.files || [];
   if (files.length < 1) throw new ApiError(422, 'Subí al menos una foto de la mascota.');
@@ -144,6 +164,9 @@ async function create(req, res) {
 
   const pet = await petRepository.findById(petId);
   const photos = await petRepository.findPhotos(petId);
+
+  await notifyFollowers(req.app.get('io'), pet);
+
   res.status(201).json({ pet: serializePet(pet, photos) });
 }
 

@@ -4,6 +4,8 @@ import { petsApi } from '../api/pets';
 import { favoritesApi } from '../api/favorites';
 import { catalogApi } from '../api/catalog';
 import { usersApi } from '../api/users';
+import { followsApi } from '../api/follows';
+import FollowButton from '../components/FollowButton';
 import { useAuth } from '../context/AuthContext';
 import PetCard from '../components/PetCard';
 import FilterSidebar from '../components/FilterSidebar';
@@ -11,7 +13,7 @@ import CityAutocomplete from '../components/CityAutocomplete';
 import BreedAutocomplete from '../components/BreedAutocomplete';
 import Avatar from '../components/Avatar';
 import VerifiedBadge from '../components/VerifiedBadge';
-import { PawIcon, PlusIcon, SearchIcon, UserIcon } from '../components/icons/Icons';
+import { FilterIcon, PawIcon, PlusIcon, SearchIcon, UserIcon } from '../components/icons/Icons';
 import { speciesIcon } from '../utils/speciesIcons';
 import './home.css';
 
@@ -21,6 +23,27 @@ const EMPTY_FILTERS = {
   breed: null, pureBreed: false,
   city: null, maxDistanceKm: '100', page: 1,
 };
+
+const FILTERS_STORAGE_KEY = 'patahogar:filtersOpen';
+
+/** En celular los filtros arrancan cerrados; en escritorio, abiertos (o como los dejó la persona). */
+function initialFiltersOpen() {
+  try {
+    const saved = localStorage.getItem(FILTERS_STORAGE_KEY);
+    if (saved !== null) return saved === 'true';
+  } catch {
+    // sin almacenamiento: se usa el valor por defecto
+  }
+  return typeof window === 'undefined' || window.innerWidth > 900;
+}
+
+function countActiveFilters(f) {
+  return [
+    f.city, f.breed, f.pureBreed, f.sex, f.size,
+    f.minAgeYears !== '' || f.maxAgeYears !== '',
+    f.isVaccinated, f.isNeutered, f.isDewormed,
+  ].filter(Boolean).length;
+}
 
 export default function HomePage() {
   const { user, isAuthenticated } = useAuth();
@@ -36,6 +59,8 @@ export default function HomePage() {
   const [peopleLoading, setPeopleLoading] = useState(false);
   const [peopleSearched, setPeopleSearched] = useState(false);
   const cityDefaultApplied = useRef(false);
+  const [filtersOpen, setFiltersOpen] = useState(initialFiltersOpen);
+  const [followedIds, setFollowedIds] = useState(new Set());
 
   useEffect(() => {
     catalogApi.species().then((d) => setSpecies(d.species)).catch(() => {});
@@ -57,6 +82,14 @@ export default function HomePage() {
       }).catch(() => {});
     }
   }, [isAuthenticated, user]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      followsApi.ids().then((d) => setFollowedIds(new Set(d.ids))).catch(() => {});
+    } else {
+      setFollowedIds(new Set());
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -159,6 +192,26 @@ export default function HomePage() {
     }));
   }
 
+  function toggleFilters() {
+    setFiltersOpen((open) => {
+      try {
+        localStorage.setItem(FILTERS_STORAGE_KEY, String(!open));
+      } catch {
+        // sin almacenamiento: solo no se recuerda
+      }
+      return !open;
+    });
+  }
+
+  function handleFollowChange(userId, now) {
+    setFollowedIds((prev) => {
+      const next = new Set(prev);
+      if (now) next.add(userId);
+      else next.delete(userId);
+      return next;
+    });
+  }
+
   function switchMode(mode) {
     setSearchMode(mode);
     setSearchDraft('');
@@ -256,7 +309,7 @@ export default function HomePage() {
             ) : (
               <ul className="people-results__list">
                 {peopleResults.map((p) => (
-                  <li key={p.id}>
+                  <li key={p.id} className="people-results__row">
                     <Link to={`/usuarios/${p.id}`} className="people-results__item">
                       <Avatar url={p.profilePhotoUrl} size={44} />
                       <strong>
@@ -264,6 +317,14 @@ export default function HomePage() {
                         <VerifiedBadge size={14} />
                       </strong>
                     </Link>
+                    {(!user || user.id !== p.id) && (
+                      <FollowButton
+                        userId={p.id}
+                        size="sm"
+                        following={followedIds.has(p.id)}
+                        onChange={(now) => handleFollowChange(p.id, now)}
+                      />
+                    )}
                   </li>
                 ))}
               </ul>
@@ -306,15 +367,18 @@ export default function HomePage() {
           </div>
         )}
 
-        <div className="home-layout">
+        <div className={filtersOpen ? 'home-layout' : 'home-layout home-layout--full'}>
+          {filtersOpen && (
           <FilterSidebar
             filters={filters}
+            onClose={toggleFilters}
             onChange={(f) => setFilters({ ...f, page: 1 })}
             onReset={() => {
               setSearchDraft('');
               setFilters({ ...EMPTY_FILTERS, city: filters.city, speciesId: filters.speciesId });
             }}
           />
+          )}
 
           <div>
             {(filters.breed || filters.q) && (
@@ -334,7 +398,16 @@ export default function HomePage() {
               </div>
             )}
             <div className="home-results-header">
-              <h2>Mascotas en adopción</h2>
+              <div className="home-results-title">
+                <h2>Mascotas en adopción</h2>
+                <button type="button" className="btn btn-outline btn-sm filters-toggle" onClick={toggleFilters} aria-expanded={filtersOpen}>
+                  <FilterIcon size={15} />
+                  {filtersOpen ? 'Ocultar filtros' : 'Filtros'}
+                  {!filtersOpen && countActiveFilters(filters) > 0 && (
+                    <span className="filters-toggle__count">{countActiveFilters(filters)}</span>
+                  )}
+                </button>
+              </div>
               {!loading && (
                 <span className="home-results-count">
                   {result.pagination.total} resultados{filters.city ? ` · ${filters.city.name} y alrededores` : ''}

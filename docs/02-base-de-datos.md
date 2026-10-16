@@ -161,6 +161,19 @@ Regla de negocio: una publicación posee entre 1 y 10 fotos.
 
 Restricción: `UNIQUE (user_id, pet_id)`.
 
+### `follows`
+
+Perfiles verificados que sigue cada usuario.
+
+| Columna | Tipo | Restricciones |
+|---|---|---|
+| `id` | INT UNSIGNED | PK, AI |
+| `follower_id` | INT UNSIGNED | NOT NULL, FK → `users.id` (CASCADE) |
+| `followed_id` | INT UNSIGNED | NOT NULL, FK → `users.id` (CASCADE) |
+| `created_at` | TIMESTAMP | NOT NULL, default `CURRENT_TIMESTAMP` |
+
+Restricción: `UNIQUE (follower_id, followed_id)`. Índice por `followed_id`. La regla de que solo se pueden seguir cuentas verificadas (`users.is_verified_organization`) se valida en la API.
+
 ### `conversations`
 
 Conversación entre dos usuarios a propósito de una mascota.
@@ -209,6 +222,7 @@ Restricción: `UNIQUE (pet_id, user_a_id, user_b_id)`. Índices: `user_a_id`, `u
 | `post_deleted_by_admin` | `petId`?, `petName`, `reason`? (`marked_outdated`) |
 | `verification_approved` | `organizationName` |
 | `verification_rejected` | `organizationName`, `reason` |
+| `followed_new_pet` | `petId`, `petName`, `ownerId`, `ownerName` |
 
 El texto mostrado al usuario no se persiste: se construye en el cliente a partir de `type` y `payload`.
 
@@ -334,6 +348,7 @@ Ubicación: `backend/src/db/migrations`. Se aplican en orden cronológico (`npm 
 | `20260916200000_create_verification_requests` | Crea `verification_requests` y `verification_documents`. |
 | `20261015120000_add_email_verification` | Agrega `users.email_verified_at` (las cuentas existentes se marcan como verificadas) y crea `email_codes`. |
 | `20261016120000_create_breeds` | Crea `breeds`, agrega `pets.breed_id`, `pets.cross_breed_id` e `is_pure_breed`, amplía `pets.breed` a 255 caracteres, carga el catálogo y vincula las razas escritas a mano en publicaciones existentes. |
+| `20261017120000_create_follows` | Crea `follows` y agrega el tipo de notificación `followed_new_pet`. |
 | `20260916210000_add_verification_badge_system` | Agrega `users.is_verified_organization`, `verification_requests.user_notified_at` y los tipos de notificación `verification_approved` y `verification_rejected`. |
 
 ## 2.6 Datos iniciales (*seeds*)

@@ -34,3 +34,60 @@
   padding: var(--space-8) var(--space-4);
   color: var(--color-text-muted);
 }
+
+.listing-tabs {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+}
+.listing-tabs button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 10px 14px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.listing-tabs button.active {
+  color: var(--color-primary-dark, var(--color-primary));
+  border-bottom-color: var(--color-primary);
+}
+
+.followed-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-3);
+}
+.followed-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+.followed-card__main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 1;
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
+}
+.followed-card__name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.followed-card__meta {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
