@@ -1,5 +1,5 @@
 import {
-  PawIcon, DogIcon, CatIcon, RabbitIcon, BirdIcon, RodentIcon, FishIcon, ReptileIcon,
+  PawIcon, DogIcon, CatIcon, RabbitIcon, BirdIcon, RodentIcon, FishIcon, ReptileIcon, OtherAnimalIcon,
 } from '../components/icons/Icons';
 
 const MAP = {
@@ -10,7 +10,7 @@ const MAP = {
   roedor: RodentIcon,
   pez: FishIcon,
   reptil: ReptileIcon,
-  otro: PawIcon,
+  otro: OtherAnimalIcon,
 };
 
 export function speciesIcon(slug) {

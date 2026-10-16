@@ -16,11 +16,11 @@ function Svg({ children, size = 20, ...props }) {
 
 export const PawIcon = (props) => (
   <Svg {...props}>
-    <circle cx="7" cy="9" r="2" />
-    <circle cx="12" cy="6.5" r="2" />
-    <circle cx="17" cy="9" r="2" />
-    <circle cx="19" cy="14" r="2" />
-    <path d="M12 12c-3.3 0-6 2.2-6 5.2 0 2 1.7 2.8 3.3 2.1 1-.4 1.8-1 2.7-1 .9 0 1.7.6 2.7 1 1.6.7 3.3-.1 3.3-2.1 0-3-2.7-5.2-6-5.2Z" />
+    <ellipse cx="5.3" cy="10.6" rx="1.6" ry="2.1" transform="rotate(-22 5.3 10.6)" />
+    <ellipse cx="9.3" cy="6.6" rx="1.7" ry="2.3" transform="rotate(-8 9.3 6.6)" />
+    <ellipse cx="14.7" cy="6.6" rx="1.7" ry="2.3" transform="rotate(8 14.7 6.6)" />
+    <ellipse cx="18.7" cy="10.6" rx="1.6" ry="2.1" transform="rotate(22 18.7 10.6)" />
+    <path d="M12 12.2c-3 0-5.5 2.4-5.5 5 0 1.6 1.2 2.6 2.7 2.3 1.1-.2 1.8-.8 2.8-.8s1.7.6 2.8.8c1.5.3 2.7-.7 2.7-2.3 0-2.6-2.5-5-5.5-5Z" />
   </Svg>
 );
 
@@ -197,75 +197,90 @@ export const MailIcon = (props) => (
 
 export const DogIcon = (props) => (
   <Svg {...props}>
-    <path d="M5 9c-1.5 0-2.5 1.3-2.5 2.8 0 1.2.8 2 1.8 2.2" />
-    <path d="M19 9c1.5 0 2.5 1.3 2.5 2.8 0 1.2-.8 2-1.8 2.2" />
-    <path d="M6.5 9.5C6.5 6.5 9 5 12 5s5.5 1.5 5.5 4.5c0 1.5-.5 2.3-.5 3.8 0 3-2 5.2-5 5.2s-5-2.2-5-5.2c0-1.5-.5-2.3-.5-3.8Z" />
-    <circle cx="10" cy="11.5" r="0.6" fill="currentColor" stroke="none" />
-    <circle cx="14" cy="11.5" r="0.6" fill="currentColor" stroke="none" />
-    <path d="M11 14h2" />
+    <path d="M7 8.6C7 6.1 9.2 4.5 12 4.5s5 1.6 5 4.1V13c0 3.6-2.2 6.5-5 6.5S7 16.6 7 13Z" />
+    <path d="M7.3 6.9C5.7 6.3 3.7 7.1 3.2 9.1c-.4 1.9.4 3.9 1.8 4.5.9.4 1.9-.2 2-1.1" />
+    <path d="M16.7 6.9c1.6-.6 3.6.2 4.1 2.2.4 1.9-.4 3.9-1.8 4.5-.9.4-1.9-.2-2-1.1" />
+    <circle cx="10" cy="10.6" r=".9" fill="currentColor" stroke="none" />
+    <circle cx="14" cy="10.6" r=".9" fill="currentColor" stroke="none" />
+    <ellipse cx="12" cy="14.1" rx="1.4" ry="1" fill="currentColor" stroke="none" />
+    <path d="M12 15.1v1.1M10.6 16.6c.8.6 2 .6 2.8 0" />
   </Svg>
 );
 
 export const CatIcon = (props) => (
   <Svg {...props}>
-    <path d="m6 5 1.5 4M18 5l-1.5 4" />
-    <path d="M7.5 9c0-.5 1-1 4.5-1s4.5.5 4.5 1c1.5 1 2 2.8 2 4.5 0 3.3-2.9 5.5-6.5 5.5S5.5 16.8 5.5 13.5c0-1.7.5-3.5 2-4.5Z" />
-    <circle cx="10" cy="12.5" r="0.6" fill="currentColor" stroke="none" />
-    <circle cx="14" cy="12.5" r="0.6" fill="currentColor" stroke="none" />
-    <path d="M11 14.5h2" />
+    <path d="M4.5 13.5c0 3.5 3.4 6 7.5 6s7.5-2.5 7.5-6V5l-4 3.2A11 11 0 0 0 12 7.6c-1.2 0-2.4.2-3.5.6L4.5 5Z" />
+    <circle cx="9.3" cy="12.4" r=".9" fill="currentColor" stroke="none" />
+    <circle cx="14.7" cy="12.4" r=".9" fill="currentColor" stroke="none" />
+    <path d="M11.2 14.6h1.6l-.8.9Z" fill="currentColor" />
+    <path d="M12 15.5c-.3.7-1 1-1.6.7M12 15.5c.3.7 1 1 1.6.7" />
   </Svg>
 );
 
 export const RabbitIcon = (props) => (
   <Svg {...props}>
-    <path d="M9 10c-1-2.5-1.5-5-.5-6.5C9.5 2.5 10.5 4 10.5 7" />
-    <path d="M15 10c1-2.5 1.5-5 .5-6.5-1-1-2 .5-2 3.5" />
-    <ellipse cx="12" cy="14" rx="5.5" ry="5" />
-    <circle cx="10" cy="13.5" r="0.6" fill="currentColor" stroke="none" />
-    <circle cx="14" cy="13.5" r="0.6" fill="currentColor" stroke="none" />
-    <path d="M11 16h2" />
+    <path d="M9.4 9.2C8.3 7.4 7.8 3.3 9.2 2.8c1.4-.5 2 3 2 5.7" />
+    <path d="M14.6 9.2c1.1-1.8 1.6-5.9.2-6.4-1.4-.5-2 3-2 5.7" />
+    <ellipse cx="12" cy="14.6" rx="6" ry="5.4" />
+    <circle cx="9.8" cy="13.8" r=".9" fill="currentColor" stroke="none" />
+    <circle cx="14.2" cy="13.8" r=".9" fill="currentColor" stroke="none" />
+    <ellipse cx="12" cy="16" rx="1" ry=".7" fill="currentColor" stroke="none" />
+    <path d="M12 16.7v.9" />
   </Svg>
 );
 
 export const BirdIcon = (props) => (
   <Svg {...props}>
-    <path d="M6 13c0-3.5 2.8-6 6.3-6 3 0 5.2 1.8 5.7 4.3.3 1.5-.5 2.7-2 2.7h-.5" />
-    <path d="M15.5 11.3 18.5 10l-1 3" />
-    <circle cx="14.5" cy="9" r="0.6" fill="currentColor" stroke="none" />
-    <path d="M6 13c-1.3 0-2.5-.6-3-1.7C5 12 6 12.3 7 12" />
-    <path d="M9 15.5 7 19M12.5 16 12 19.5" />
+    <path d="M16.5 5.8c-2 0-3.6 1.6-3.6 3.6v.7C9 10.5 5.2 12.8 4 17.3l3.4-.6c1.3 1.5 3.2 2.3 5.4 2.3 3.6 0 6.2-2.8 6.2-6.4V9.3c0-2-1-3.5-2.5-3.5Z" />
+    <path d="m19 8.2 2.4 1-2.4 1" />
+    <circle cx="16.4" cy="8.7" r=".9" fill="currentColor" stroke="none" />
+    <path d="M9.6 14.3c1.7-.3 3.5-1.3 4.6-2.9" />
+    <path d="M11.6 19v2M14.4 18.7v2.3" />
   </Svg>
 );
 
 export const RodentIcon = (props) => (
   <Svg {...props}>
-    <circle cx="9" cy="7.5" r="2" />
-    <circle cx="14.5" cy="6.5" r="1.6" />
-    <path d="M6 12c0-2.5 2.5-4.5 6-4.5s6.5 2 6.5 5c0 3-2.5 5-6.5 5-2.5 0-4-1.2-4-1.2" />
-    <circle cx="9.5" cy="11.5" r="0.5" fill="currentColor" stroke="none" />
-    <path d="M4.5 14.5c1-.5 2-.3 2.5.5" />
+    <path d="M12 5.6c-3.4 0-5.5 2.4-5.5 5-1.6.9-2.6 2.6-2.6 4.4 0 2.8 3.6 4.7 8.1 4.7s8.1-1.9 8.1-4.7c0-1.8-1-3.5-2.6-4.4 0-2.6-2.1-5-5.5-5Z" />
+    <path d="M7.4 7.7a2 2 0 1 1 2.6-1.6M16.6 7.7a2 2 0 1 0-2.6-1.6" />
+    <circle cx="9.8" cy="10.9" r=".9" fill="currentColor" stroke="none" />
+    <circle cx="14.2" cy="10.9" r=".9" fill="currentColor" stroke="none" />
+    <ellipse cx="12" cy="12.9" rx="1" ry=".7" fill="currentColor" stroke="none" />
+    <path d="M11.4 14.3v1.5h1.2v-1.5" />
+    <path d="M6.6 13.6l2 .4M17.4 13.6l-2 .4" />
   </Svg>
 );
 
 export const FishIcon = (props) => (
   <Svg {...props}>
-    <path d="M4 12c3-4 8-5.5 12-3.5 2 1 3.5 2.2 4 3.5-.5 1.3-2 2.5-4 3.5-4 2-9 .5-12-3.5Z" />
-    <path d="M20 12 22 9.5M20 12l2 2.5" />
-    <circle cx="9" cy="11" r="0.7" fill="currentColor" stroke="none" />
+    <path d="M3.5 12c2.5-4 6.5-5.5 10.5-4.5 2.5.6 4 2.3 4.5 4.5-.5 2.2-2 3.9-4.5 4.5-4 1-8-.5-10.5-4.5Z" />
+    <path d="m18.5 12 3-3.3v6.6Z" />
+    <circle cx="7.6" cy="11.2" r=".9" fill="currentColor" stroke="none" />
+    <path d="M10.4 9.4c.9 1.6.9 3.6 0 5.2" />
   </Svg>
 );
 
 export const ReptileIcon = (props) => (
   <Svg {...props}>
-    <path d="M3 15c1.5-3 4-4.5 7-4.5 1.5-2.5 4-3.5 6.5-3 2 .4 3.5 1.7 4 3.5-1 .3-2 .2-2.7-.3" />
-    <path d="M10 10.5c1.5 1 2.5 2.7 2.5 4.5 0 2-1.5 3.5-4 3.5S4 17 4 15c0 0 .3-1 1-1.5" />
-    <circle cx="17.5" cy="9.5" r="0.6" fill="currentColor" stroke="none" />
-    <path d="M12.5 16.5 14 18.5M9.5 17 9 19" />
+    <path d="M3.8 15c0-4.4 3.5-7.6 7.7-7.6s7.7 3.2 7.7 7.6Z" />
+    <path d="M7 11.4c3 1.3 6 1.3 9 0" />
+    <path d="M19.2 13.1c.6-1.6 2.4-2.1 3.2-.9.6.9.1 2.2-1.3 2.4-.7.1-1.3 0-1.9-.2" />
+    <path d="M7.2 15v2.5M15.8 15v2.5" />
+    <path d="M3.8 15l-1.6.9" />
   </Svg>
 );
 
 export const FlagIcon = (props) => (
   <Svg {...props}>
     <path d="M5 21V4m0 0h11l-2 4 2 4H5" />
+  </Svg>
+);
+
+export const OtherAnimalIcon = (props) => (
+  <Svg {...props}>
+    <circle cx="12" cy="12" r="8.5" />
+    <circle cx="8.2" cy="12" r="1.1" fill="currentColor" stroke="none" />
+    <circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none" />
+    <circle cx="15.8" cy="12" r="1.1" fill="currentColor" stroke="none" />
   </Svg>
 );
