@@ -60,6 +60,7 @@ Plataforma web de adopción de mascotas: conecta a personas que ofrecen animales
 - Chat con envío de fotos (hasta 5 por mensaje, privadas entre los participantes) y reporte de mensajes con revisión de un moderador.
 - Favoritos y seguimiento de perfiles verificados, con aviso cuando publican una mascota nueva.
 - Panel de filtros plegable (se oculta y cada grupo se pliega).
+- Diseño adaptable a celular, tablet y escritorio (probado desde 320 px de ancho): menú compacto, grillas de dos columnas, chat a pantalla completa y campos que no provocan zoom en iPhone.
 - **Chat en tiempo real** (WebSocket) con conversaciones por mascota, agrupadas por persona.
 - Notificaciones en tiempo real y centro de notificaciones.
 - Perfiles públicos con historial de publicaciones; "Mi cuenta" para editar los datos y cambiar la contraseña con un código enviado por correo.

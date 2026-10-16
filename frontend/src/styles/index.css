@@ -321,3 +321,36 @@ h1, h2, h3, h4, p {
 @media (max-width: 720px) {
   .container { padding: 0 var(--space-4); }
 }
+
+/* ---------- Ajustes para pantallas chicas ---------- */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+h1, h2, h3, h4, p, strong {
+  overflow-wrap: break-word;
+}
+@media (max-width: 720px) {
+  /* Menos de 16px hace que Safari en iPhone amplíe la página al tocar el campo. */
+  .input, select.input, textarea.input,
+  .hero__searchbar input {
+    font-size: 16px;
+  }
+  .btn {
+    white-space: normal;
+  }
+  .btn-sm {
+    white-space: nowrap;
+  }
+}
+
+/* Nombre + insignia de verificado: el nombre puede bajar de línea sin separarse del tilde. */
+.name-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* El pie de página queda siempre abajo, aunque la página tenga poco contenido. */
+.site-main {
+  flex: 1 0 auto;
+}

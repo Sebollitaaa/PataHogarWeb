@@ -71,7 +71,7 @@
 
 @media (max-width: 480px) {
   .field-row { grid-template-columns: 1fr; }
-  .auth-card { padding: var(--space-5); }
+  .auth-card { padding: var(--space-5) var(--space-4); }
 }
 
 .code-input {

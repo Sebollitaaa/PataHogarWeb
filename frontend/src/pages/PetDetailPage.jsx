@@ -117,7 +117,7 @@ export default function PetDetailPage() {
         <div className="pet-detail__title-row">
           <h1>{pet.name}</h1>
           {isAuthenticated && !isOwner && (
-            <button className="btn-icon btn-outline" onClick={toggleFavorite} aria-label="Favorito">
+            <button className="btn btn-icon btn-outline" onClick={toggleFavorite} aria-label="Favorito">
               <HeartIcon filled={isFavorite} />
             </button>
           )}

@@ -89,7 +89,7 @@ export default function FavoritesPage() {
                   <Avatar url={p.profilePhotoUrl} size={56} />
                   <div>
                     <strong className="followed-card__name">
-                      {p.firstName} {p.lastName}
+                      <span className="name-text">{p.firstName} {p.lastName}</span>
                       {p.isVerifiedOrganization && <VerifiedBadge size={15} />}
                     </strong>
                     <span className="followed-card__meta">

@@ -1,5 +1,6 @@
 .publish-page {
-  padding: var(--space-6) 0 var(--space-8);
+  padding-top: var(--space-6);
+  padding-bottom: var(--space-8);
   display: flex;
   justify-content: center;
 }
@@ -58,4 +59,16 @@
   cursor: pointer;
   color: var(--color-text-faint);
   display: inline-flex;
+}
+
+@media (max-width: 560px) {
+  .publish-page {
+    padding-top: var(--space-4);
+  }
+  .publish-card {
+    padding: var(--space-5) var(--space-4);
+  }
+  .publish-card h1 {
+    font-size: 1.3rem;
+  }
 }

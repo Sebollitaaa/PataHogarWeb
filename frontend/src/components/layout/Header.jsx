@@ -27,8 +27,8 @@ export default function Header() {
 
         <nav className="site-header__nav">
           {isAuthenticated && (
-            <Link to="/publicar" className="btn btn-accent btn-sm">
-              <PlusIcon size={16} /> Publicar mascota
+            <Link to="/publicar" className="btn btn-accent btn-sm site-header__publish" title="Publicar mascota" aria-label="Publicar mascota">
+              <PlusIcon size={16} /> <span className="site-header__publish-label">Publicar mascota</span>
             </Link>
           )}
 

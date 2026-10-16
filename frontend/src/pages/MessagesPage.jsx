@@ -202,24 +202,24 @@ export default function MessagesPage() {
         ) : (
           <>
             <div className="messages-thread__header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <button className="btn-icon btn-ghost mobile-back" onClick={() => navigate('/mensajes')} aria-label="Volver">
+              <div className="messages-thread__who">
+                <button className="btn btn-icon btn-ghost mobile-back" onClick={() => navigate('/mensajes')} aria-label="Volver">
                   <ArrowLeftIcon size={18} />
                 </button>
                 <Link to={`/usuarios/${activeChat.counterpart.id}`} className="messages-thread__counterpart-link">
                   <Avatar url={activeChat.counterpart.profilePhotoUrl} size={30} />
                   <strong>
-                    {activeChat.counterpart.firstName} {activeChat.counterpart.lastName}
+                    <span className="messages-thread__name">{activeChat.counterpart.firstName} {activeChat.counterpart.lastName}</span>
                     {activeChat.counterpart.isVerifiedOrganization && <VerifiedBadge size={13} />}
                   </strong>
                 </Link>
-                <span className="field-hint"> · sobre {activeChat.petName}</span>
+                <span className="field-hint messages-thread__pet">sobre {activeChat.petName}</span>
               </div>
-              <div style={{ display: 'flex', gap: 6 }}>
-                <button className="btn btn-outline btn-sm" onClick={() => handleArchive(activeChat, !activeChat.archived)}>
-                  <ArchiveIcon size={15} /> {activeChat.archived ? 'Desarchivar' : 'Archivar'}
+              <div className="messages-thread__actions">
+                <button className="btn btn-outline btn-sm" onClick={() => handleArchive(activeChat, !activeChat.archived)} title={activeChat.archived ? 'Desarchivar' : 'Archivar'} aria-label={activeChat.archived ? 'Desarchivar' : 'Archivar'}>
+                  <ArchiveIcon size={15} /> <span className="messages-thread__action-label">{activeChat.archived ? 'Desarchivar' : 'Archivar'}</span>
                 </button>
-                <button className="btn btn-outline btn-sm" onClick={() => handleDelete(activeChat)}>
+                <button className="btn btn-outline btn-sm" onClick={() => handleDelete(activeChat)} title="Eliminar conversación" aria-label="Eliminar conversación">
                   <TrashIcon size={15} />
                 </button>
               </div>

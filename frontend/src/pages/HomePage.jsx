@@ -290,7 +290,7 @@ export default function HomePage() {
             <div className="home-results-header">
               <h2>Personas y organizaciones verificadas</h2>
               {peopleSearched && !peopleLoading && (
-                <span className="home-results-count">{peopleResults.length} resultados</span>
+                <span className="home-results-count">{peopleResults.length} {peopleResults.length === 1 ? 'resultado' : 'resultados'}</span>
               )}
             </div>
 
@@ -313,7 +313,7 @@ export default function HomePage() {
                     <Link to={`/usuarios/${p.id}`} className="people-results__item">
                       <Avatar url={p.profilePhotoUrl} size={44} />
                       <strong>
-                        {p.firstName} {p.lastName}
+                        <span className="name-text">{p.firstName} {p.lastName}</span>
                         <VerifiedBadge size={14} />
                       </strong>
                     </Link>
@@ -410,7 +410,7 @@ export default function HomePage() {
               </div>
               {!loading && (
                 <span className="home-results-count">
-                  {result.pagination.total} resultados{filters.city ? ` · ${filters.city.name} y alrededores` : ''}
+                  {result.pagination.total} {result.pagination.total === 1 ? 'resultado' : 'resultados'}{filters.city ? ` · ${filters.city.name} y alrededores` : ''}
                 </span>
               )}
             </div>

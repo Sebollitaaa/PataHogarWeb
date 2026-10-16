@@ -1,5 +1,6 @@
 .profile-page {
-  padding: var(--space-6) 0 var(--space-8);
+  padding-top: var(--space-6);
+  padding-bottom: var(--space-8);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -67,4 +68,16 @@
   font-size: 0.85rem;
   color: var(--color-text-muted);
   text-align: center;
+}
+
+@media (max-width: 560px) {
+  .profile-page {
+    padding-top: var(--space-4);
+  }
+  .profile-card {
+    padding: var(--space-5) var(--space-4);
+  }
+  .profile-photo-row {
+    flex-wrap: wrap;
+  }
 }

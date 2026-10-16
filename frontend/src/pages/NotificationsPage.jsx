@@ -33,8 +33,8 @@ export default function NotificationsPage() {
 
   return (
     <div className="container listing-page" style={{ maxWidth: 640 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>Notificaciones</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+        <h1 style={{ marginBottom: 0 }}>Notificaciones</h1>
         {data?.notifications.some((n) => !n.isRead) && (
           <button className="link-btn" onClick={handleMarkAllRead}>Marcar todas como leídas</button>
         )}
