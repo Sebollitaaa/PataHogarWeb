@@ -5,7 +5,7 @@ import { catalogApi } from '../api/catalog';
 import { useAuth } from '../context/AuthContext';
 import Field from '../components/ui/Field';
 import PhotoPicker from '../components/PhotoPicker';
-import AgeInput from '../components/AgeInput';
+import AgeInput, { validateAge } from '../components/AgeInput';
 import BreedPicker, { EMPTY_BREED_VALUE, breedPayload, breedValueFromPet } from '../components/BreedPicker';
 import FullPageSpinner from '../components/ui/FullPageSpinner';
 import { XIcon } from '../components/icons/Icons';
@@ -13,6 +13,8 @@ import { API_ORIGIN } from '../api/origin';
 import FillSuggestions from '../components/FillSuggestions';
 import { useLastContact } from '../hooks/useLastContact';
 import './publish.css';
+
+const emptyIfZero = (n) => (n ? String(n) : '');
 
 export default function EditPetPage() {
   const { id } = useParams();
@@ -42,7 +44,10 @@ export default function EditPetPage() {
       setForm({
         speciesId: pet.species.id, name: pet.name, size: pet.size,
         ageMode: pet.ageMode, birthDate: pet.birthDate ? pet.birthDate.slice(0, 10) : '',
-        ageYears: pet.ageYears, ageMonths: pet.ageMonths, ageDays: pet.ageDays,
+        // Se precarga lo que escribió el dueño (no la edad ya avanzada): si no lo cambia, la cuenta sigue.
+        ageYears: pet.ageEntered ? emptyIfZero(pet.ageEntered.years) : '',
+        ageMonths: pet.ageEntered ? emptyIfZero(pet.ageEntered.months) : '',
+        ageDays: pet.ageEntered ? emptyIfZero(pet.ageEntered.days) : '',
         sex: pet.sex,
         isVaccinated: pet.isVaccinated, isNeutered: pet.isNeutered, isDewormed: pet.isDewormed,
         description: pet.description, contactWhatsapp: pet.contactWhatsapp || '', contactEmail: pet.contactEmail || '',
@@ -59,6 +64,11 @@ export default function EditPetPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
+    const ageError = validateAge(form);
+    if (ageError) {
+      setError(ageError);
+      return;
+    }
     setLoading(true);
     try {
       const { pet: updated } = await petsApi.update(id, { ...form, ...breedPayload(breedValue) });

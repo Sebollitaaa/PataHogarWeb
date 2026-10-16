@@ -14,6 +14,14 @@ const PET_BASE_SELECT = [
   'b2.image_url as cross_breed_image_url',
 ];
 
+// Años cumplidos hoy: por la fecha de nacimiento, o (edad a mano) por la fecha de
+// nacimiento estimada a partir de lo cargado y del día en que se cargó.
+const CURRENT_AGE_YEARS_SQL = `TIMESTAMPDIFF(YEAR,
+  COALESCE(pets.birth_date,
+    DATE_SUB(DATE_SUB(DATE_SUB(COALESCE(pets.age_reference_date, DATE(pets.created_at)),
+      INTERVAL pets.age_years YEAR), INTERVAL pets.age_months MONTH), INTERVAL pets.age_days DAY)),
+  CURDATE())`;
+
 function withJoins(query) {
   return query
     .join('species', 'species.id', 'pets.species_id')
@@ -87,8 +95,8 @@ async function search(filters) {
   if (speciesId) base = base.where('pets.species_id', speciesId);
   if (sex) base = base.where('pets.sex', sex);
   if (size) base = base.where('pets.size', size);
-  if (minAgeYears !== undefined) base = base.where('pets.age_years', '>=', minAgeYears);
-  if (maxAgeYears !== undefined) base = base.where('pets.age_years', '<=', maxAgeYears);
+  if (minAgeYears !== undefined) base = base.whereRaw(`${CURRENT_AGE_YEARS_SQL} >= ?`, [minAgeYears]);
+  if (maxAgeYears !== undefined) base = base.whereRaw(`${CURRENT_AGE_YEARS_SQL} <= ?`, [maxAgeYears]);
   if (isVaccinated !== undefined) base = base.where('pets.is_vaccinated', isVaccinated === 'true');
   if (isNeutered !== undefined) base = base.where('pets.is_neutered', isNeutered === 'true');
   if (isDewormed !== undefined) base = base.where('pets.is_dewormed', isDewormed === 'true');

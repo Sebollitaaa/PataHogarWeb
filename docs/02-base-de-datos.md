@@ -105,6 +105,7 @@ Publicaciones de mascotas.
 | `age_mode` | ENUM(`birth_date`,`manual`) | NOT NULL, default `manual` | Modo de carga de la edad. |
 | `birth_date` | DATE | NULL | Solo si `age_mode = birth_date`. |
 | `age_years`, `age_months`, `age_days` | INT UNSIGNED | NOT NULL, default 0 | Edad (ver nota). |
+| `age_reference_date` | DATE | NULL | Día en que se cargó la edad a mano; desde ahí la edad avanza sola. |
 | `is_vaccinated`, `is_neutered`, `is_dewormed` | TINYINT(1) | NOT NULL, default 0 | Datos de salud. |
 | `description` | TEXT | NOT NULL | Descripción. |
 | `status` | ENUM(`disponible`,`en_proceso`,`adoptada`,`desactualizada`) | NOT NULL, default `disponible` | Estado. |
@@ -117,7 +118,7 @@ Publicaciones de mascotas.
 
 Notas:
 
-- **Edad:** con `age_mode = manual` se almacenan los valores ingresados sin normalizar. Con `birth_date` se almacena la fecha y los campos de edad son una instantánea; la edad efectiva se recalcula al serializar la entidad.
+- **Edad:** con `age_mode = manual` se almacenan los valores ingresados sin normalizar (los campos vacíos cuentan como 0) y el día de carga en `age_reference_date`. Al serializar, la edad avanza según el tiempo transcurrido respetando el formato cargado: si fue solo en días se sigue contando en días hasta los 2 meses; si fue en años sin días, no se muestran días. Editar la publicación sin cambiar la edad no reinicia la cuenta. Con `birth_date` se almacena la fecha y los campos de edad son una instantánea; la edad efectiva se recalcula al serializar. En ambos modos la edad se congela en `status_changed_at` cuando la mascota pasa a `adoptada`.
 - **Ubicación:** se copia de la ubicación efectiva del propietario en el momento de la publicación y no se actualiza posteriormente.
 - **Raza:** `breed_id` / `cross_breed_id` / `is_pure_breed` se calculan en el servidor al crear o editar (`breedCatalogService.resolveBreedFields`). Si el cliente envía solo texto en `breed`, se intenta reconocer contra el catálogo (por nombre o alias); si no coincide, se conserva como texto libre con `breed_id = NULL` e `is_pure_breed = 0`.
 
@@ -380,6 +381,7 @@ Ubicación: `backend/src/db/migrations`. Se aplican en orden cronológico (`npm 
 | `20260916200000_create_verification_requests` | Crea `verification_requests` y `verification_documents`. |
 | `20261015120000_add_email_verification` | Agrega `users.email_verified_at` (las cuentas existentes se marcan como verificadas) y crea `email_codes`. |
 | `20261016120000_create_breeds` | Crea `breeds`, agrega `pets.breed_id`, `pets.cross_breed_id` e `is_pure_breed`, amplía `pets.breed` a 255 caracteres, carga el catálogo y vincula las razas escritas a mano en publicaciones existentes. |
+| `20261019120000_add_age_reference_date_to_pets` | Agrega `pets.age_reference_date` (en publicaciones existentes con edad a mano toma la fecha de publicación). |
 | `20261018120000_create_chat_photos_and_reports` | Hace nulo `messages.content`, agrega `removed_at`/`removed_reason`, crea `message_attachments` y `message_reports`, y amplía los tipos de notificación y de acción de auditoría (`remove_message`). |
 | `20261017120000_create_follows` | Crea `follows` y agrega el tipo de notificación `followed_new_pet`. |
 | `20260916210000_add_verification_badge_system` | Agrega `users.is_verified_organization`, `verification_requests.user_notified_at` y los tipos de notificación `verification_approved` y `verification_rejected`. |

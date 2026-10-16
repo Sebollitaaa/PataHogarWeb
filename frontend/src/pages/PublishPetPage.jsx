@@ -4,7 +4,7 @@ import { petsApi } from '../api/pets';
 import { catalogApi } from '../api/catalog';
 import Field from '../components/ui/Field';
 import PhotoPicker from '../components/PhotoPicker';
-import AgeInput from '../components/AgeInput';
+import AgeInput, { validateAge } from '../components/AgeInput';
 import BreedPicker, { EMPTY_BREED_VALUE, breedPayload } from '../components/BreedPicker';
 import FillSuggestions from '../components/FillSuggestions';
 import { useAuth } from '../context/AuthContext';
@@ -13,7 +13,7 @@ import './publish.css';
 
 const initialForm = {
   speciesId: '', name: '', size: 'mediano',
-  ageMode: 'manual', birthDate: '', ageYears: '0', ageMonths: '0', ageDays: '0',
+  ageMode: 'manual', birthDate: '', ageYears: '', ageMonths: '', ageDays: '',
   sex: 'macho',
   isVaccinated: false, isNeutered: false, isDewormed: false, description: '',
   contactWhatsapp: '', contactEmail: '',
@@ -46,6 +46,11 @@ export default function PublishPetPage() {
 
     if (photos.length === 0) {
       setError('Subí al menos una foto de la mascota.');
+      return;
+    }
+    const ageError = validateAge(form);
+    if (ageError) {
+      setError(ageError);
       return;
     }
 

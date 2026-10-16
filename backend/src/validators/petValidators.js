@@ -2,6 +2,16 @@ const { body, param, query } = require('express-validator');
 
 const toBool = (v) => v === true || v === 'true' || v === '1' || v === 1;
 
+// Edad a mano: los campos vacíos cuentan como 0, pero no pueden quedar los tres vacíos (o en 0).
+const manualAgeNotEmpty = body('ageMode').custom((mode, { req }) => {
+  if (mode !== 'manual') return true;
+  const total = ['ageYears', 'ageMonths', 'ageDays']
+    .map((k) => req.body[k])
+    .reduce((sum, v) => sum + (v === undefined || v === null || v === '' ? 0 : Number(v) || 0), 0);
+  if (total <= 0) throw new Error('Indicá la edad: completá al menos años, meses o días.');
+  return true;
+});
+
 const createPetValidator = [
   body('speciesId').isInt({ min: 1 }).withMessage('Elegí una especie válida.'),
   body('name').trim().isLength({ min: 1, max: 100 }).withMessage('El nombre de la mascota es obligatorio.'),
@@ -15,9 +25,10 @@ const createPetValidator = [
     .isISO8601().withMessage('La fecha de nacimiento no es válida.')
     .custom((value) => new Date(value) <= new Date())
     .withMessage('La fecha de nacimiento no puede ser en el futuro.'),
-  body('ageYears').if(body('ageMode').equals('manual')).optional().isInt({ min: 0, max: 40 }).withMessage('Edad (años) inválida.'),
-  body('ageMonths').if(body('ageMode').equals('manual')).optional().isInt({ min: 0, max: 11 }).withMessage('Edad (meses) inválida.'),
-  body('ageDays').if(body('ageMode').equals('manual')).optional().isInt({ min: 0, max: 364 }).withMessage('Edad (días) inválida.'),
+  body('ageYears').if(body('ageMode').equals('manual')).optional({ values: 'falsy' }).isInt({ min: 0, max: 40 }).withMessage('Edad (años) inválida.'),
+  body('ageMonths').if(body('ageMode').equals('manual')).optional({ values: 'falsy' }).isInt({ min: 0, max: 11 }).withMessage('Edad (meses) inválida.'),
+  body('ageDays').if(body('ageMode').equals('manual')).optional({ values: 'falsy' }).isInt({ min: 0, max: 364 }).withMessage('Edad (días) inválida.'),
+  manualAgeNotEmpty,
   body('sex').isIn(['macho', 'hembra']).withMessage('Sexo inválido.'),
   body('isVaccinated').optional().customSanitizer(toBool).isBoolean(),
   body('isNeutered').optional().customSanitizer(toBool).isBoolean(),
@@ -40,9 +51,10 @@ const updatePetValidator = [
     .isISO8601().withMessage('La fecha de nacimiento no es válida.')
     .custom((value) => new Date(value) <= new Date())
     .withMessage('La fecha de nacimiento no puede ser en el futuro.'),
-  body('ageYears').if(body('ageMode').equals('manual')).optional().isInt({ min: 0, max: 40 }),
-  body('ageMonths').if(body('ageMode').equals('manual')).optional().isInt({ min: 0, max: 11 }),
-  body('ageDays').if(body('ageMode').equals('manual')).optional().isInt({ min: 0, max: 364 }),
+  body('ageYears').if(body('ageMode').equals('manual')).optional({ values: 'falsy' }).isInt({ min: 0, max: 40 }),
+  body('ageMonths').if(body('ageMode').equals('manual')).optional({ values: 'falsy' }).isInt({ min: 0, max: 11 }),
+  body('ageDays').if(body('ageMode').equals('manual')).optional({ values: 'falsy' }).isInt({ min: 0, max: 364 }),
+  manualAgeNotEmpty,
   body('sex').optional().isIn(['macho', 'hembra']),
   body('isVaccinated').optional().customSanitizer(toBool).isBoolean(),
   body('isNeutered').optional().customSanitizer(toBool).isBoolean(),

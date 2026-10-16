@@ -51,6 +51,7 @@ Plataforma web de adopción de mascotas: conecta a personas que ofrecen animales
 
 **Búsqueda**
 - Filtros por especie, raza, sexo, tamaño, rango de edad, salud y texto libre.
+- Edad de la mascota por fecha de nacimiento o cargada a mano (solo los campos que se conozcan); la edad avanza sola con el paso del tiempo y se congela al ser adoptada.
 - Catálogo de unas 540 razas con autocompletado y miniaturas (perros, gatos, conejos, aves, roedores, peces, reptiles y otros), búsqueda por alias ("poodle" → Caniche), cruzas de dos razas que aparecen al buscar cualquiera de ellas y filtro "Solo pura raza".
 - **Búsqueda por cercanía** con cálculo de distancia (fórmula de Haversine) y ordenamiento por proximidad.
 - Autocompletado de localidades de toda Argentina mediante la API pública Georef.

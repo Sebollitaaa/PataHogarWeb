@@ -1,0 +1,18 @@
+.age-input__manual {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+.age-input__part {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.age-input__part span {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+.age-input__part .input {
+  text-align: center;
+}

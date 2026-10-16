@@ -82,6 +82,7 @@ Los endpoints paginados aceptan `page` (≥ 1) y `pageSize` y responden:
   "isCrossBreed": true, "isPureBreed": false,
   "size": "pequeno", "sex": "macho",
   "ageMode": "manual", "birthDate": null, "ageYears": 0, "ageMonths": 1, "ageDays": 5,
+  "ageIsApproximate": true, "ageEntered": { "years": 0, "months": 0, "days": 28, "referenceDate": "2026-10-01" },
   "isVaccinated": true, "isNeutered": false, "isDewormed": true,
   "description": "…", "status": "disponible",
   "latitude": -38.7183, "longitude": -62.2663,
@@ -93,7 +94,7 @@ Los endpoints paginados aceptan `page` (≥ 1) y `pageSize` y responden:
 }
 ```
 
-`breed` conserva el texto de siempre (las aplicaciones existentes no cambian); los campos `breedId`, `crossBreedId`, `breedInfo`, `crossBreedInfo`, `isCrossBreed` e `isPureBreed` son los nuevos. `distanceKm` solo se incluye en búsquedas con coordenadas. Con `ageMode = birth_date`, `ageYears/Months/Days` se recalculan en cada respuesta.
+`breed` conserva el texto de siempre (las aplicaciones existentes no cambian); los campos `breedId`, `crossBreedId`, `breedInfo`, `crossBreedInfo`, `isCrossBreed` e `isPureBreed` son los nuevos. `distanceKm` solo se incluye en búsquedas con coordenadas. `ageYears/Months/Days` son la edad **de hoy**: con `birth_date` se calcula desde la fecha de nacimiento; con `manual`, desde lo cargado más el tiempo transcurrido desde `ageEntered.referenceDate` (y se congela al ser adoptada). `ageIsApproximate` es `true` para la edad cargada a mano (el cliente la muestra con "aprox."). `ageEntered` contiene los valores tal como se cargaron, para el formulario de edición (`null` con fecha de nacimiento).
 
 ## 3.3 Autenticación — `/auth`
 
@@ -167,7 +168,7 @@ Respuesta: `{ user }`.
 | `speciesId` | int | Filtra por especie. |
 | `sex` | `macho` \| `hembra` | |
 | `size` | `pequeno` \| `mediano` \| `grande` | |
-| `minAgeYears`, `maxAgeYears` | int ≥ 0 | Rango sobre `age_years`. |
+| `minAgeYears`, `maxAgeYears` | int ≥ 0 | Rango de años cumplidos **hoy** (considera el tiempo transcurrido desde la carga). |
 | `isVaccinated`, `isNeutered`, `isDewormed` | `true` \| `false` | |
 | `status` | enum de estado | Por defecto `disponible`. |
 | `q` | string (≤ 120) | Coincidencia parcial en nombre, raza o alias de raza ("poodle" encuentra Caniche). |
@@ -198,7 +199,7 @@ Respuesta: `{ pets: [pet], pagination }`.
 | `sex` | `macho` \| `hembra` |
 | `ageMode` | `birth_date` \| `manual` |
 | `birthDate` | ISO 8601, no futura (si `ageMode = birth_date`) |
-| `ageYears` / `ageMonths` / `ageDays` | 0–40 / 0–11 / 0–364 (si `ageMode = manual`) |
+| `ageYears` / `ageMonths` / `ageDays` | 0–40 / 0–11 / 0–364 (si `ageMode = manual`). Pueden quedar vacíos (cuentan como 0), pero no los tres ni todos en 0 (`422`). |
 | `isVaccinated`, `isNeutered`, `isDewormed` | booleanos |
 | `description` | 10–3000 caracteres |
 | `contactWhatsapp`, `contactEmail` | opcionales, con formato válido |

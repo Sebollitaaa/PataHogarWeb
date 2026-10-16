@@ -10,7 +10,7 @@ const breedCatalogService = require('../services/breedCatalogService');
 const followRepository = require('../models/followRepository');
 const chatImageService = require('../services/chatImageService');
 const db = require('../db/knex');
-const { computeAgeFromBirthDate } = require('../utils/age');
+const { computeAgeFromBirthDate, computeManualAge } = require('../utils/age');
 
 const MAX_PHOTOS = 10;
 
@@ -18,14 +18,18 @@ function toBool(v) {
   return v === true || v === 'true' || v === '1' || v === 1;
 }
 
+const toAgeNumber = (v) => (v === undefined || v === null || v === '' ? 0 : parseInt(v, 10) || 0);
+
 /**
  * A partir de lo que mandó el formulario (fecha de nacimiento o edad a mano),
  * arma las columnas de edad a guardar. En modo "manual" se guarda tal cual lo
- * escribió el dueño, sin normalizar (si puso 45 días, quedan 45 días, no "1 mes y 15 días").
- * En modo "birth_date" se guarda la fecha y una foto de la edad actual, que después
- * se recalcula en vivo cada vez que se muestra la publicación (ver serializePet).
+ * escribió el dueño (los campos vacíos cuentan como 0) junto con el día en que
+ * lo cargó (`age_reference_date`): desde ese día la edad avanza sola (ver serializePet).
+ * En modo "birth_date" se guarda la fecha y una foto de la edad actual.
+ * `previous` es la publicación antes de editar: si la edad a mano no cambió,
+ * se conserva su fecha de referencia para que la cuenta no se reinicie.
  */
-function buildAgeFields(b) {
+function buildAgeFields(b, previous = null) {
   if (b.ageMode === 'birth_date') {
     const { years, months, days } = computeAgeFromBirthDate(b.birthDate);
     return {
@@ -34,24 +38,38 @@ function buildAgeFields(b) {
       age_years: years,
       age_months: months,
       age_days: days,
+      age_reference_date: null,
     };
   }
+
+  const entered = { age_years: toAgeNumber(b.ageYears), age_months: toAgeNumber(b.ageMonths), age_days: toAgeNumber(b.ageDays) };
+  const unchanged = previous
+    && previous.age_mode === 'manual'
+    && previous.age_years === entered.age_years
+    && previous.age_months === entered.age_months
+    && previous.age_days === entered.age_days;
 
   return {
     age_mode: 'manual',
     birth_date: null,
-    age_years: b.ageYears || 0,
-    age_months: b.ageMonths || 0,
-    age_days: b.ageDays || 0,
+    ...entered,
+    age_reference_date: unchanged && previous.age_reference_date ? previous.age_reference_date : new Date(),
   };
 }
 
+/** La edad se congela el día en que la mascota fue adoptada. */
+function ageUntil(pet) {
+  return pet.status === 'adoptada' && pet.status_changed_at ? new Date(pet.status_changed_at) : new Date();
+}
+
 function serializePet(pet, photos = []) {
-  // Si la edad se cargó por fecha de nacimiento, se recalcula al momento de mostrarla
-  // para que siempre sea la edad real de hoy, no una foto vieja de cuando se publicó.
+  // La edad se recalcula al mostrarla, para que sea la de hoy y no una foto vieja
+  // de cuando se publicó (o la del día de la adopción, si ya fue adoptada).
+  const until = ageUntil(pet);
+  const entered = { years: pet.age_years, months: pet.age_months, days: pet.age_days };
   const age = pet.age_mode === 'birth_date' && pet.birth_date
-    ? computeAgeFromBirthDate(pet.birth_date)
-    : { years: pet.age_years, months: pet.age_months, days: pet.age_days };
+    ? computeAgeFromBirthDate(pet.birth_date, until)
+    : computeManualAge(entered, pet.age_reference_date || pet.created_at, until);
 
   return {
     id: pet.id,
@@ -74,6 +92,12 @@ function serializePet(pet, photos = []) {
     ageYears: age.years,
     ageMonths: age.months,
     ageDays: age.days,
+    // La edad cargada a mano es una estimación: el cliente la muestra con "aprox.".
+    ageIsApproximate: pet.age_mode !== 'birth_date',
+    // Lo que escribió el dueño y cuándo, para precargar el formulario de edición.
+    ageEntered: pet.age_mode === 'manual'
+      ? { years: entered.years, months: entered.months, days: entered.days, referenceDate: pet.age_reference_date }
+      : null,
     sex: pet.sex,
     isVaccinated: Boolean(pet.is_vaccinated),
     isNeutered: Boolean(pet.is_neutered),
@@ -198,7 +222,7 @@ async function update(req, res) {
     if (b[key] !== undefined) changes[key.replace(/([A-Z])/g, '_$1').toLowerCase()] = toBool(b[key]);
   }
   if (b.ageMode !== undefined) {
-    Object.assign(changes, buildAgeFields(b));
+    Object.assign(changes, buildAgeFields(b, pet));
   }
 
   const touchesBreed = ['breed', 'breedId', 'crossBreedId'].some((k) => b[k] !== undefined);

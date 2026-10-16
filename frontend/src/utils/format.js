@@ -18,7 +18,13 @@ export function timeAgo(dateString) {
 
 // Solo muestra las unidades que tienen valor: si años es 0, ni aparece (no "0 años, 4 meses").
 // Si solo hay días (ej. 45), se muestran tal cual, sin convertirlos a "1 mes y 15 días".
-export function formatAge(years, months, days) {
+/** `approximate`: edad cargada a mano (una estimación), se muestra con "aprox.". */
+export function formatAge(years, months, days, approximate = false) {
+  const text = ageText(years, months, days);
+  return approximate && text !== 'Recién nacido/a' ? `${text} aprox.` : text;
+}
+
+function ageText(years, months, days) {
   const parts = [];
   if (years > 0) parts.push(`${years} ${years === 1 ? 'año' : 'años'}`);
   if (months > 0) parts.push(`${months} ${months === 1 ? 'mes' : 'meses'}`);

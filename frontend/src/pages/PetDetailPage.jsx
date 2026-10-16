@@ -125,7 +125,7 @@ export default function PetDetailPage() {
         <p className="pet-detail__subtitle">
           {pet.species.name}{pet.breed ? ` · ${pet.breed}` : ''} · {sizeLabel(pet.size)} · {sexLabel(pet.sex)}
         </p>
-        <p className="pet-detail__subtitle">{formatAge(pet.ageYears, pet.ageMonths, pet.ageDays)}</p>
+        <p className="pet-detail__subtitle">{formatAge(pet.ageYears, pet.ageMonths, pet.ageDays, pet.ageIsApproximate)}</p>
 
         <div className="pet-detail__badges">
           {pet.isPureBreed && <span className="badge badge-primary">Pura raza</span>}
