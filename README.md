@@ -50,7 +50,8 @@ Plataforma web de adopción de mascotas: conecta a personas que ofrecen animales
 - Datos de salud (vacunación, castración, desparasitación) y datos de contacto opcionales.
 
 **Búsqueda**
-- Filtros por especie, sexo, tamaño, rango de edad, salud y texto libre.
+- Filtros por especie, raza, sexo, tamaño, rango de edad, salud y texto libre.
+- Catálogo de unas 540 razas con autocompletado y miniaturas (perros, gatos, conejos, aves, roedores, peces, reptiles y otros), búsqueda por alias ("poodle" → Caniche), cruzas de dos razas que aparecen al buscar cualquiera de ellas y filtro "Solo pura raza".
 - **Búsqueda por cercanía** con cálculo de distancia (fórmula de Haversine) y ordenamiento por proximidad.
 - Autocompletado de localidades de toda Argentina mediante la API pública Georef.
 - Ubicación verificada opcional mediante geolocalización del navegador.
@@ -326,6 +327,7 @@ La documentación completa se encuentra en la carpeta [`docs/`](docs/README.md):
 | [Seguridad](docs/06-seguridad.md) | Mecanismos de protección y limitaciones conocidas. |
 | [Integración con el cliente de escritorio](docs/07-integracion-cliente-escritorio.md) | Contrato de datos para la gestión de verificaciones. |
 | [Configuración y operación](docs/08-configuracion-y-operacion.md) | Variables, modos de ejecución y mantenimiento. |
+| [Atribuciones de imágenes de razas](docs/09-atribuciones-imagenes-razas.md) | Origen y licencia de las miniaturas de razas (Wikipedia / Wikimedia Commons). |
 
 ---
 
