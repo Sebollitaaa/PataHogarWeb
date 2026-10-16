@@ -1,7 +1,7 @@
 const db = require('../db/knex');
 
 async function create({ conversation_id, sender_id, content }) {
-  const [id] = await db('messages').insert({ conversation_id, sender_id, content });
+  const [id] = await db('messages').insert({ conversation_id, sender_id, content: content || null });
   return id;
 }
 
@@ -43,4 +43,50 @@ function lastMessageForConversations(conversationIds) {
     });
 }
 
-module.exports = { create, findById, findByConversation, markAllRead, unreadCountsForConversations, lastMessageForConversations };
+/* ---------- adjuntos ---------- */
+
+function addAttachments(messageId, items) {
+  if (items.length === 0) return Promise.resolve();
+  return db('message_attachments').insert(items.map((i) => ({
+    message_id: messageId,
+    thumb_file: i.thumbFile,
+    medium_file: i.mediumFile,
+    width: i.width,
+    height: i.height,
+  })));
+}
+
+function findAttachmentsForMessages(messageIds) {
+  if (messageIds.length === 0) return Promise.resolve([]);
+  return db('message_attachments').whereIn('message_id', messageIds).orderBy('id');
+}
+
+function findAttachmentById(id) {
+  return db('message_attachments')
+    .join('messages', 'messages.id', 'message_attachments.message_id')
+    .where('message_attachments.id', id)
+    .select('message_attachments.*', 'messages.conversation_id', 'messages.removed_at')
+    .first();
+}
+
+function deleteAttachmentsForMessage(messageId) {
+  return db('message_attachments').where({ message_id: messageId }).del();
+}
+
+function markRemoved(messageId, reason) {
+  return db('messages').where({ id: messageId }).update({ removed_at: db.fn.now(), removed_reason: reason || null });
+}
+
+module.exports = {
+  create,
+  findById,
+  findByConversation,
+  markAllRead,
+  unreadCountsForConversations,
+  lastMessageForConversations,
+  addAttachments,
+  findAttachmentsForMessages,
+  findAttachmentById,
+  deleteAttachmentsForMessage,
+  markRemoved,
+};

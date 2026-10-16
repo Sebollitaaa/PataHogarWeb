@@ -222,3 +222,175 @@
 .mobile-back {
   display: none;
 }
+
+.bubble__photos {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.bubble__photos--1 { grid-template-columns: minmax(0, 240px); }
+.bubble__photos--2 { grid-template-columns: repeat(2, minmax(0, 130px)); }
+.bubble__photos--3,
+.bubble__photos--4 { grid-template-columns: repeat(2, minmax(0, 130px)); }
+
+.bubble__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.bubble__footer time {
+  margin-top: 0;
+}
+.bubble__report {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-text-faint);
+  display: inline-flex;
+  padding: 2px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.bubble:hover .bubble__report,
+.bubble__report:focus-visible {
+  opacity: 1;
+}
+@media (hover: none) {
+  .bubble__report { opacity: 0.7; }
+}
+.bubble--removed {
+  opacity: 0.75;
+  font-style: italic;
+}
+
+.messages-thread__error {
+  margin: 0 var(--space-4) var(--space-2);
+}
+
+.composer-previews {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4) 0;
+  flex-wrap: wrap;
+}
+.composer-previews__item {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+.composer-previews__item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.composer-previews__item button {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.chat-image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: none;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-alt);
+  overflow: hidden;
+  cursor: zoom-in;
+}
+.bubble__photos--1 .chat-image {
+  aspect-ratio: auto;
+  min-height: 90px;
+}
+.chat-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.bubble__photos--1 .chat-image img {
+  height: auto;
+  max-height: 320px;
+  object-fit: contain;
+}
+.chat-image--error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  color: var(--color-text-faint);
+  cursor: default;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+.lightbox img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: var(--radius-md);
+}
+.lightbox__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.report-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+.report-modal__card {
+  width: 100%;
+  max-width: 420px;
+  padding: var(--space-5);
+}
+.report-modal__card h3 {
+  margin: 0 0 var(--space-3);
+}
+.report-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}

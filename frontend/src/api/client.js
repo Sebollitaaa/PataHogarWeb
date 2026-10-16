@@ -48,7 +48,7 @@ class ApiError extends Error {
  * Wrapper de fetch: manda el access token, y si vuelve un 401 intenta refrescar
  * la sesión una vez (vía la cookie httpOnly) antes de rendirse.
  */
-async function request(path, { method = 'GET', body, isForm = false, retry = true } = {}) {
+async function request(path, { method = 'GET', body, isForm = false, retry = true, asBlob = false } = {}) {
   const headers = {};
   if (!isForm) headers['Content-Type'] = 'application/json';
   const hadToken = Boolean(accessToken);
@@ -67,13 +67,15 @@ async function request(path, { method = 'GET', body, isForm = false, retry = tru
   if (res.status === 401 && retry && hadToken && path !== '/auth/refresh') {
     try {
       await refreshAccessToken();
-      return request(path, { method, body, isForm, retry: false });
+      return request(path, { method, body, isForm, retry: false, asBlob });
     } catch {
       accessToken = null;
       if (onUnauthorized) onUnauthorized();
       throw new ApiError(401, 'Sesión expirada.');
     }
   }
+
+  if (asBlob && res.ok) return res.blob();
 
   let data = null;
   const text = await res.text();
@@ -95,6 +97,7 @@ async function request(path, { method = 'GET', body, isForm = false, retry = tru
 
 export const api = {
   get: (path) => request(path),
+  blob: (path) => request(path, { asBlob: true }),
   post: (path, body, opts = {}) => request(path, { method: 'POST', body, ...opts }),
   patch: (path, body, opts = {}) => request(path, { method: 'PATCH', body, ...opts }),
   delete: (path, body) => request(path, { method: 'DELETE', body }),

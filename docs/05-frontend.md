@@ -99,7 +99,7 @@ Módulos por recurso: `auth`, `pets`, `catalog`, `favorites`, `follows`, `conver
 | `PublishPetPage` / `EditPetPage` | Alta y edición de publicaciones, incluida la gestión de fotos. |
 | `MyListingsPage`, `AdoptedPage` | Listados filtrados del usuario. |
 | `FavoritesPage` | Pestañas "Mascotas" (favoritas) y "Siguiendo" (perfiles verificados que sigue el usuario). |
-| `MessagesPage` | Lista de conversaciones agrupadas por contraparte y hilo de mensajes con recepción en tiempo real. |
+| `MessagesPage` | Lista de conversaciones agrupadas por contraparte y hilo de mensajes con recepción en tiempo real. Permite adjuntar hasta 5 fotos (cámara o galería), verlas ampliadas y reportar mensajes recibidos. |
 | `NotificationsPage` | Listado paginado de notificaciones. |
 | `ProfilePage` | Edición de foto, teléfono, ciudad y contraseña. |
 | `PublicProfilePage` | Perfil público con publicaciones e insignia de verificación ("Mi perfil" del menú apunta a `/usuarios/:id` propio). |
@@ -120,6 +120,7 @@ Módulos por recurso: `auth`, `pets`, `catalog`, `favorites`, `follows`, `conver
 | `PhotoPicker` | Selector de hasta 10 imágenes con vista previa. |
 | `DocumentPicker` | Selector múltiple (hasta 10) con vista previa para imágenes e indicador de archivo para PDF. |
 | `AgeInput` | Alterna entre fecha de nacimiento y edad manual. |
+| `ChatImage`, `ImageLightbox`, `ReportMessageModal` | Foto privada del chat (descargada con la sesión), visor ampliado y formulario de reporte. |
 | `FollowButton` | Botón Seguir / Siguiendo de los perfiles verificados. |
 | `FilterSidebar` | Panel de filtros del inicio: se oculta/muestra completo y cada grupo se pliega; muestra cuántos filtros hay aplicados. |
 | `Avatar`, `VerifiedBadge` | Foto de perfil e insignia de verificación. |

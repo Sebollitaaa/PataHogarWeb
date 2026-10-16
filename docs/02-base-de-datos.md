@@ -197,10 +197,41 @@ Restricción: `UNIQUE (pet_id, user_a_id, user_b_id)`. Índices: `user_a_id`, `u
 | `id` | INT UNSIGNED | PK, AI | |
 | `conversation_id` | INT UNSIGNED | NOT NULL, FK → `conversations.id` (CASCADE) | |
 | `sender_id` | INT UNSIGNED | NULL, FK → `users.id` (SET NULL) | |
-| `content` | TEXT | NOT NULL | Máx. 2000 caracteres (validado en aplicación). |
+| `content` | TEXT | NULL | Máx. 2000 caracteres (validado en aplicación). Nulo en mensajes que son solo fotos. |
 | `read_at` | TIMESTAMP | NULL | Nulo hasta que el destinatario lo lee. |
+| `removed_at` | TIMESTAMP | NULL | Fecha en que un moderador retiró el mensaje (queda el hueco en el historial, sin texto ni fotos). |
+| `removed_reason` | VARCHAR(300) | NULL | Motivo informado por el moderador. |
 
 Índice: `(conversation_id, created_at)`.
+
+### `message_attachments`
+
+Fotos enviadas por el chat.
+
+| Columna | Tipo | Restricciones | Descripción |
+|---|---|---|---|
+| `id` | INT UNSIGNED | PK, AI | |
+| `message_id` | INT UNSIGNED | NOT NULL, FK → `messages.id` (CASCADE) | |
+| `thumb_file`, `medium_file` | VARCHAR(120) | NOT NULL | Nombres de archivo dentro de `backend/storage/chat/<conversationId>/` (carpeta privada). |
+| `width`, `height` | INT UNSIGNED | NULL | Dimensiones de la versión mediana. |
+| `created_at` | TIMESTAMP | NOT NULL | |
+
+### `message_reports`
+
+Reportes de mensajes hechos por los participantes de la conversación.
+
+| Columna | Tipo | Restricciones | Descripción |
+|---|---|---|---|
+| `id` | INT UNSIGNED | PK, AI | |
+| `message_id` | INT UNSIGNED | NOT NULL, FK → `messages.id` (CASCADE) | |
+| `reporter_id` | INT UNSIGNED | NOT NULL, FK → `users.id` (CASCADE) | |
+| `reason` | ENUM(`inapropiado`,`spam`,`acoso`,`otro`) | NOT NULL | |
+| `comment` | VARCHAR(500) | NULL | |
+| `status` | ENUM(`pendiente`,`resuelto`,`descartado`) | NOT NULL, default `pendiente` | |
+| `resolved_by` | INT UNSIGNED | NULL, FK → `users.id` (SET NULL) | Moderador que lo resolvió. |
+| `resolved_at`, `created_at` | TIMESTAMP | | |
+
+Restricción: `UNIQUE (message_id, reporter_id)` (un mismo usuario no reporta dos veces el mismo mensaje).
 
 ### `notifications`
 
@@ -223,6 +254,7 @@ Restricción: `UNIQUE (pet_id, user_a_id, user_b_id)`. Índices: `user_a_id`, `u
 | `verification_approved` | `organizationName` |
 | `verification_rejected` | `organizationName`, `reason` |
 | `followed_new_pet` | `petId`, `petName`, `ownerId`, `ownerName` |
+| `message_removed_by_admin` | `conversationId` |
 
 El texto mostrado al usuario no se persiste: se construye en el cliente a partir de `type` y `payload`.
 
@@ -348,6 +380,7 @@ Ubicación: `backend/src/db/migrations`. Se aplican en orden cronológico (`npm 
 | `20260916200000_create_verification_requests` | Crea `verification_requests` y `verification_documents`. |
 | `20261015120000_add_email_verification` | Agrega `users.email_verified_at` (las cuentas existentes se marcan como verificadas) y crea `email_codes`. |
 | `20261016120000_create_breeds` | Crea `breeds`, agrega `pets.breed_id`, `pets.cross_breed_id` e `is_pure_breed`, amplía `pets.breed` a 255 caracteres, carga el catálogo y vincula las razas escritas a mano en publicaciones existentes. |
+| `20261018120000_create_chat_photos_and_reports` | Hace nulo `messages.content`, agrega `removed_at`/`removed_reason`, crea `message_attachments` y `message_reports`, y amplía los tipos de notificación y de acción de auditoría (`remove_message`). |
 | `20261017120000_create_follows` | Crea `follows` y agrega el tipo de notificación `followed_new_pet`. |
 | `20260916210000_add_verification_badge_system` | Agrega `users.is_verified_organization`, `verification_requests.user_notified_at` y los tipos de notificación `verification_approved` y `verification_rejected`. |
 

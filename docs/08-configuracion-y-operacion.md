@@ -109,6 +109,10 @@ UPDATE users SET role = 'admin' WHERE email = 'usuario@ejemplo.com';
 
 El directorio `backend/uploads` se crea en tiempo de ejecución y no forma parte del control de versiones. Debe conservarse junto con la base de datos en cualquier copia de seguridad, ya que las tablas `pet_photos`, `users.profile_photo_url` y `verification_documents` referencian archivos allí almacenados.
 
+### Fotos del chat
+
+Las fotos que los usuarios se envían por el chat se guardan en `backend/storage/chat/` (carpeta privada, no versionada). Igual que `uploads`, deben incluirse en las copias de seguridad y estar en un disco persistente cuando se despliegue (por ejemplo, un volumen EBS en AWS).
+
 ## 8.8 Resolución de problemas
 
 | Síntoma | Causa probable | Acción |

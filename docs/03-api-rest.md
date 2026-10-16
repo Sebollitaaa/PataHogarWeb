@@ -253,7 +253,9 @@ Cuando un perfil verificado publica una mascota, sus seguidores reciben una noti
 | GET | `/conversations` | Conversaciones agrupadas por contraparte. |
 | POST | `/conversations` | Inicia o recupera la conversación de una mascota y envía el primer mensaje. |
 | GET | `/conversations/:id/messages?beforeId=` | Hasta 30 mensajes (orden cronológico); marca como leídos los recibidos y sus notificaciones. |
-| POST | `/conversations/:id/messages` | Envía un mensaje. |
+| POST | `/conversations/:id/messages` | Envía un mensaje de texto, con fotos, o ambos (ver abajo). |
+| GET | `/conversations/attachments/:attachmentId/:variant` | Foto del chat (`variant`: `thumb` \| `medium`). Solo la ven quienes participan de la conversación. |
+| POST | `/conversations/messages/:messageId/report` | Reporta un mensaje recibido. |
 | PATCH | `/conversations/:id/archive` | Archiva o desarchiva para el usuario autenticado. |
 | DELETE | `/conversations/:id` | Eliminación lógica para el usuario autenticado. |
 
@@ -273,7 +275,13 @@ Cuando un perfil verificado publica una mascota, sus seguidores reciben una noti
 }
 ```
 
-**Mensaje:** `{ id, conversationId, senderId, content, createdAt, readAt }`.
+**`POST /conversations/:id/messages`** — acepta JSON `{ content }` o `multipart/form-data` con `content` (opcional, hasta 2000 caracteres) y hasta **5 fotos** en el campo `photos` (JPG, PNG, WebP o GIF, máx. 8 MB c/u). Debe llevar texto, fotos o ambos. Las imágenes se validan por su contenido real, se reencodean a JPEG (miniatura de 360 px y versión de 1280 px) y se les quitan los metadatos EXIF. Errores: `422` mensaje vacío, archivo que no es una imagen o más de 5 fotos · `413` imagen demasiado pesada · `403` no participa de la conversación.
+
+**Mensaje:** `{ id, conversationId, senderId, content, attachments: [{ id, width, height }], removed, createdAt, readAt }`. Si `removed` es `true`, `content` es `null` y `attachments` está vacío.
+
+**Fotos:** no tienen URL pública. Se piden a `GET /conversations/attachments/:attachmentId/:variant` con el token de sesión (el cliente las descarga y las muestra como *blob*). `404` si el solicitante no participa de la conversación o la foto fue retirada; un moderador solo accede a fotos de mensajes que tengan un reporte.
+
+**`POST /conversations/messages/:messageId/report`** — cuerpo `{ reason: inapropiado | spam | acoso | otro, comment? (≤ 500) }`. `201` · `422` si es un mensaje propio o ya retirado · `404` si no participa de la conversación. Reportar dos veces el mismo mensaje no genera duplicados.
 
 **`PATCH …/archive`** — cuerpo `{ archived: boolean }`.
 
@@ -330,6 +338,15 @@ Perfil público (sin correo ni teléfono):
 | GET | `/admin/actions` | Registro de auditoría. |
 
 No es posible suspender ni eliminar la propia cuenta.
+
+### Moderación de reportes
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/admin/reports?status=` | Reportes de mensajes (`pendiente` por defecto) con el texto, las fotos, el autor y quien reportó. |
+| POST | `/admin/reports/:id/resolve` | Cuerpo `{ action: remove \| dismiss, note? }`. `remove` retira el mensaje (borra texto y fotos, avisa al autor y deja constancia en la auditoría); `dismiss` descarta el reporte. En ambos casos se cierran todos los reportes pendientes de ese mensaje. |
+
+Para sancionar al autor se usa el endpoint de suspensión de usuarios existente.
 
 ## 3.11 Solicitudes de verificación — `/verification-requests`
 

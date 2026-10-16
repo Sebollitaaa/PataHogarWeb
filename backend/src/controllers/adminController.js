@@ -5,6 +5,10 @@ const refreshTokenRepository = require('../models/refreshTokenRepository');
 const adminActionRepository = require('../models/adminActionRepository');
 const petRepository = require('../models/petRepository');
 const imageService = require('../services/imageService');
+const chatImageService = require('../services/chatImageService');
+const messageRepository = require('../models/messageRepository');
+const messageReportRepository = require('../models/messageReportRepository');
+const notificationService = require('../services/notificationService');
 
 async function listUsers(req, res) {
   const page = req.query.page ? parseInt(req.query.page, 10) : 1;
@@ -61,6 +65,8 @@ async function deleteUser(req, res) {
   if (!user) throw new ApiError(404, 'Usuario no encontrado.');
 
   const ownedPets = await db('pets').where({ owner_id: targetId }).select('id');
+  // Las conversaciones del usuario caen en cascada: hay que borrar también sus fotos del chat.
+  const convoIds = await db('conversations').where({ user_a_id: targetId }).orWhere({ user_b_id: targetId }).pluck('id');
 
   await adminActionRepository.create({
     admin_id: req.user.id,
@@ -77,6 +83,9 @@ async function deleteUser(req, res) {
   for (const pet of ownedPets) {
     await imageService.deleteEntityImages('pets', pet.id);
   }
+  for (const convoId of convoIds) {
+    await chatImageService.deleteConversation(convoId);
+  }
 
   res.json({ message: 'Usuario eliminado.' });
 }
@@ -87,4 +96,84 @@ async function listActions(req, res) {
   res.json({ actions });
 }
 
-module.exports = { listUsers, banUser, unbanUser, deleteUser, listActions };
+async function listReports(req, res) {
+  const status = ['pendiente', 'resuelto', 'descartado'].includes(req.query.status) ? req.query.status : 'pendiente';
+  const rows = await messageReportRepository.listForAdmin({ status });
+
+  const attachments = await messageRepository.findAttachmentsForMessages(rows.map((r) => r.message_id));
+  const byMessage = {};
+  for (const att of attachments) {
+    if (!byMessage[att.message_id]) byMessage[att.message_id] = [];
+    byMessage[att.message_id].push({ id: att.id });
+  }
+
+  res.json({
+    reports: rows.map((r) => ({
+      id: r.id,
+      reason: r.reason,
+      comment: r.comment,
+      status: r.status,
+      createdAt: r.created_at,
+      resolvedAt: r.resolved_at,
+      reporter: { id: r.reporter_id, name: `${r.reporter_first_name} ${r.reporter_last_name}` },
+      message: {
+        id: r.message_id,
+        conversationId: r.conversation_id,
+        content: r.removed_at ? null : r.content,
+        attachments: r.removed_at ? [] : byMessage[r.message_id] || [],
+        removed: Boolean(r.removed_at),
+        createdAt: r.message_created_at,
+        sender: r.sender_id
+          ? { id: r.sender_id, name: `${r.sender_first_name} ${r.sender_last_name}`, status: r.sender_status }
+          : null,
+      },
+    })),
+  });
+}
+
+/**
+ * Resolución de un reporte: `remove` retira el mensaje (queda el hueco en el
+ * historial, sin texto ni fotos) y avisa al autor; `dismiss` lo descarta.
+ */
+async function resolveReport(req, res) {
+  const report = await messageReportRepository.findById(req.params.id);
+  if (!report) throw new ApiError(404, 'Reporte no encontrado.');
+
+  const message = await messageRepository.findById(report.message_id);
+  const { action, note } = req.body;
+
+  if (action === 'remove' && message && !message.removed_at) {
+    const attachments = await messageRepository.findAttachmentsForMessages([message.id]);
+    await chatImageService.deleteFiles(
+      message.conversation_id,
+      attachments.flatMap((a) => [a.thumb_file, a.medium_file])
+    );
+    await messageRepository.deleteAttachmentsForMessage(message.id);
+    await messageRepository.markRemoved(message.id, note || 'Incumple las normas de la comunidad.');
+
+    await adminActionRepository.create({
+      admin_id: req.user.id,
+      action_type: 'remove_message',
+      target_type: 'message',
+      target_id: message.id,
+      reason: note || null,
+    });
+
+    if (message.sender_id) {
+      await notificationService.create(req.app.get('io'), {
+        user_id: message.sender_id,
+        type: 'message_removed_by_admin',
+        payload: { conversationId: message.conversation_id },
+      });
+    }
+  }
+
+  await messageReportRepository.resolveForMessage(report.message_id, {
+    status: action === 'remove' ? 'resuelto' : 'descartado',
+    adminId: req.user.id,
+  });
+
+  res.json({ message: action === 'remove' ? 'Mensaje eliminado.' : 'Reporte descartado.' });
+}
+
+module.exports = { listUsers, banUser, unbanUser, deleteUser, listActions, listReports, resolveReport };

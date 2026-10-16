@@ -8,6 +8,8 @@ const locationService = require('../services/locationService');
 const imageService = require('../services/imageService');
 const breedCatalogService = require('../services/breedCatalogService');
 const followRepository = require('../models/followRepository');
+const chatImageService = require('../services/chatImageService');
+const db = require('../db/knex');
 const { computeAgeFromBirthDate } = require('../utils/age');
 
 const MAX_PHOTOS = 10;
@@ -335,8 +337,10 @@ async function remove(req, res) {
     });
   }
 
+  const convoIds = await db('conversations').where({ pet_id: pet.id }).pluck('id');
   await petRepository.remove(pet.id);
   await imageService.deleteEntityImages('pets', pet.id);
+  for (const convoId of convoIds) await chatImageService.deleteConversation(convoId);
   res.json({ message: 'Publicación eliminada.' });
 }
 

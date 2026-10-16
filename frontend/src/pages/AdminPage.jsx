@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { adminApi } from '../api/admin';
+import ChatImage from '../components/ChatImage';
+import ImageLightbox from '../components/ImageLightbox';
 import { ShieldIcon, UserIcon } from '../components/icons/Icons';
 import { timeAgo } from '../utils/format';
 import '../components/row-list.css';
@@ -17,10 +19,13 @@ export default function AdminPage() {
 
       <div className="listing-tabs">
         <button className={tab === 'users' ? 'active' : ''} onClick={() => setTab('users')}>Usuarios</button>
+        <button className={tab === 'reports' ? 'active' : ''} onClick={() => setTab('reports')}>Reportes</button>
         <button className={tab === 'actions' ? 'active' : ''} onClick={() => setTab('actions')}>Auditoría</button>
       </div>
 
-      {tab === 'users' ? <UsersTab /> : <ActionsTab />}
+      {tab === 'users' && <UsersTab />}
+      {tab === 'reports' && <ReportsTab />}
+      {tab === 'actions' && <ActionsTab />}
     </div>
   );
 }
@@ -108,6 +113,7 @@ function ActionsTab() {
     ban_user: 'Suspendió un usuario',
     delete_user: 'Eliminó un usuario',
     flag_outdated_pet: 'Marcó una publicación como desactualizada',
+    remove_message: 'Eliminó un mensaje del chat',
   };
 
   return !actions ? null : actions.length === 0 ? (
@@ -125,5 +131,101 @@ function ActionsTab() {
         </li>
       ))}
     </ul>
+  );
+}
+
+const REPORT_REASONS = {
+  inapropiado: 'Contenido inapropiado o ilegal',
+  acoso: 'Acoso o maltrato',
+  spam: 'Spam o publicidad',
+  otro: 'Otro motivo',
+};
+
+function ReportsTab() {
+  const [status, setStatus] = useState('pendiente');
+  const [reports, setReports] = useState(null);
+  const [message, setMessage] = useState('');
+  const [lightbox, setLightbox] = useState(null);
+
+  useEffect(() => {
+    setReports(null);
+    adminApi.reports(status).then((d) => setReports(d.reports));
+  }, [status]);
+
+  async function resolve(report, action) {
+    let note = '';
+    if (action === 'remove') {
+      if (!confirm('¿Eliminar este mensaje? Se borran su texto y sus fotos y se avisa al autor.')) return;
+      note = prompt('Motivo (opcional, queda en la auditoría)') || '';
+    }
+    await adminApi.resolveReport(report.id, action, note);
+    setMessage(action === 'remove' ? 'Mensaje eliminado.' : 'Reporte descartado.');
+    setReports((list) => list.filter((r) => r.message.id !== report.message.id));
+  }
+
+  async function handleBanSender(report) {
+    const sender = report.message.sender;
+    const reason = prompt(`¿Por qué suspendés a ${sender.name}? (opcional)`) || '';
+    await adminApi.banUser(sender.id, reason);
+    setMessage(`${sender.name} fue suspendido.`);
+  }
+
+  return (
+    <div>
+      <div className="listing-tabs" style={{ marginBottom: 16 }}>
+        {[['pendiente', 'Pendientes'], ['resuelto', 'Resueltos'], ['descartado', 'Descartados']].map(([value, label]) => (
+          <button key={value} className={status === value ? 'active' : ''} onClick={() => setStatus(value)}>{label}</button>
+        ))}
+      </div>
+      {message && <div className="alert alert-info" style={{ marginBottom: 16 }}>{message}</div>}
+
+      {!reports ? null : reports.length === 0 ? (
+        <div className="listing-empty"><p>No hay reportes {status === 'pendiente' ? 'pendientes' : status === 'resuelto' ? 'resueltos' : 'descartados'}.</p></div>
+      ) : (
+        <ul className="row-list">
+          {reports.map((r) => (
+            <li key={r.id} className="card report-card">
+              <div className="report-card__head">
+                <span className="badge badge-warning">{REPORT_REASONS[r.reason] || r.reason}</span>
+                <time className="row-card__time">{timeAgo(r.createdAt)}</time>
+              </div>
+              <p className="report-card__who">
+                <strong>{r.reporter.name}</strong> reportó un mensaje de <strong>{r.message.sender ? r.message.sender.name : 'una cuenta eliminada'}</strong>
+                {r.message.sender?.status === 'banned' && <span className="badge badge-danger" style={{ marginLeft: 6 }}>Suspendido</span>}
+              </p>
+              {r.comment && <p className="report-card__comment">“{r.comment}”</p>}
+
+              <div className="report-card__message">
+                {r.message.removed ? (
+                  <em>Mensaje eliminado.</em>
+                ) : (
+                  <>
+                    {r.message.content && <p>{r.message.content}</p>}
+                    {r.message.attachments.length > 0 && (
+                      <div className="report-card__photos">
+                        {r.message.attachments.map((a) => (
+                          <ChatImage key={a.id} attachment={a} onOpen={() => setLightbox(a)} />
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {status === 'pendiente' && (
+                <div className="row-card__actions">
+                  <button className="btn btn-outline btn-sm" onClick={() => resolve(r, 'dismiss')}>Descartar</button>
+                  {r.message.sender && r.message.sender.status !== 'banned' && (
+                    <button className="btn btn-outline btn-sm" onClick={() => handleBanSender(r)}>Suspender al autor</button>
+                  )}
+                  <button className="btn btn-danger btn-sm" onClick={() => resolve(r, 'remove')}>Eliminar mensaje</button>
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      {lightbox && <ImageLightbox attachment={lightbox} onClose={() => setLightbox(null)} />}
+    </div>
   );
 }

@@ -11,6 +11,8 @@ export function notificationText(n) {
       return `Te escribieron por ${petName}.`;
     case 'reply_to_inquiry':
       return `Te respondieron por ${petName}.`;
+    case 'message_removed_by_admin':
+      return 'Un moderador eliminó un mensaje tuyo por incumplir las normas de la comunidad.';
     case 'followed_new_pet':
       return `${n.payload?.ownerName || 'Un perfil que seguís'} publicó una mascota nueva: ${petName}.`;
     case 'verification_approved':

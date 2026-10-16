@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { conversationsApi } from '../api/conversations';
 import { useAuth } from '../context/AuthContext';
@@ -7,9 +7,15 @@ import { useNotifications } from '../context/NotificationsContext';
 import FullPageSpinner from '../components/ui/FullPageSpinner';
 import Avatar from '../components/Avatar';
 import VerifiedBadge from '../components/VerifiedBadge';
-import { ArchiveIcon, ArrowLeftIcon, SendIcon, TrashIcon } from '../components/icons/Icons';
+import ChatImage from '../components/ChatImage';
+import ImageLightbox from '../components/ImageLightbox';
+import ReportMessageModal from '../components/ReportMessageModal';
+import { ArchiveIcon, ArrowLeftIcon, CameraIcon, FlagIcon, SendIcon, TrashIcon, XIcon } from '../components/icons/Icons';
 import { timeAgo } from '../utils/format';
 import './messages.css';
+
+const MAX_PHOTOS = 5;
+const MAX_PHOTO_BYTES = 8 * 1024 * 1024;
 
 export default function MessagesPage() {
   const { conversationId } = useParams();
@@ -25,6 +31,11 @@ export default function MessagesPage() {
   const [loadingThread, setLoadingThread] = useState(false);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
+  const [photos, setPhotos] = useState([]);
+  const [sendError, setSendError] = useState('');
+  const [lightbox, setLightbox] = useState(null);
+  const [reporting, setReporting] = useState(null);
+  const fileInputRef = useRef(null);
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -67,13 +78,37 @@ export default function MessagesPage() {
     conversationsApi.list().then((d) => setGroups(d.conversations));
   }
 
+  // Las vistas previas usan object URLs: se liberan al cambiar de fotos o al salir.
+  const previews = useMemo(() => photos.map((file) => URL.createObjectURL(file)), [photos]);
+  useEffect(() => () => previews.forEach((url) => URL.revokeObjectURL(url)), [previews]);
+
+  function handlePickPhotos(e) {
+    const picked = Array.from(e.target.files || []);
+    e.target.value = '';
+    setSendError('');
+    const valid = picked.filter((f) => f.type.startsWith('image/'));
+    if (valid.length < picked.length) setSendError('Solo se pueden enviar fotos.');
+    const tooBig = valid.find((f) => f.size > MAX_PHOTO_BYTES);
+    if (tooBig) {
+      setSendError('Cada foto puede pesar hasta 8 MB.');
+      return;
+    }
+    const next = [...photos, ...valid].slice(0, MAX_PHOTOS);
+    if (photos.length + valid.length > MAX_PHOTOS) setSendError(`Podés enviar hasta ${MAX_PHOTOS} fotos por mensaje.`);
+    setPhotos(next);
+  }
+
   async function handleSend(e) {
     e.preventDefault();
-    if (!draft.trim()) return;
+    if (!draft.trim() && photos.length === 0) return;
     setSending(true);
+    setSendError('');
     try {
-      await conversationsApi.send(conversationId, draft);
+      await conversationsApi.send(conversationId, draft.trim(), photos);
       setDraft('');
+      setPhotos([]);
+    } catch (err) {
+      setSendError(err.message);
     } finally {
       setSending(false);
     }
@@ -194,28 +229,75 @@ export default function MessagesPage() {
               <FullPageSpinner />
             ) : (
               <div className="messages-thread__body">
-                {messages.map((m) => (
-                  <div key={m.id} className={`bubble ${m.senderId === user.id ? 'bubble--own' : ''}`}>
-                    <p>{m.content}</p>
-                    <time>{timeAgo(m.createdAt)}</time>
-                  </div>
-                ))}
+                {messages.map((m) => {
+                  const own = m.senderId === user.id;
+                  return (
+                    <div key={m.id} className={`bubble ${own ? 'bubble--own' : ''} ${m.removed ? 'bubble--removed' : ''}`}>
+                      {m.removed ? (
+                        <p><em>Un moderador eliminó este mensaje.</em></p>
+                      ) : (
+                        <>
+                          {m.attachments.length > 0 && (
+                            <div className={`bubble__photos bubble__photos--${Math.min(m.attachments.length, 4)}`}>
+                              {m.attachments.map((a) => (
+                                <ChatImage key={a.id} attachment={a} onOpen={() => setLightbox(a)} />
+                              ))}
+                            </div>
+                          )}
+                          {m.content && <p>{m.content}</p>}
+                        </>
+                      )}
+                      <div className="bubble__footer">
+                        {!own && !m.removed && (
+                          <button type="button" className="bubble__report" title="Reportar mensaje" aria-label="Reportar mensaje" onClick={() => setReporting(m)}>
+                            <FlagIcon size={13} />
+                          </button>
+                        )}
+                        <time>{timeAgo(m.createdAt)}</time>
+                      </div>
+                    </div>
+                  );
+                })}
                 <div ref={bottomRef} />
               </div>
             )}
 
+            {sendError && <div className="alert alert-error messages-thread__error">{sendError}</div>}
+
+            {photos.length > 0 && (
+              <div className="composer-previews">
+                {previews.map((url, i) => (
+                  <div key={url} className="composer-previews__item">
+                    <img src={url} alt="" />
+                    <button type="button" aria-label="Quitar foto" onClick={() => setPhotos((list) => list.filter((_, idx) => idx !== i))}>
+                      <XIcon size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <form className="messages-thread__composer" onSubmit={handleSend}>
+              <button
+                type="button" className="btn btn-outline btn-icon" aria-label="Adjuntar fotos" title="Adjuntar fotos"
+                onClick={() => fileInputRef.current.click()} disabled={photos.length >= MAX_PHOTOS}
+              >
+                <CameraIcon size={18} />
+              </button>
+              <input ref={fileInputRef} type="file" accept="image/*" multiple hidden onChange={handlePickPhotos} />
               <input
-                className="input" placeholder="Escribí un mensaje…"
+                className="input" placeholder={photos.length ? 'Agregá un texto (opcional)…' : 'Escribí un mensaje…'}
                 value={draft} onChange={(e) => setDraft(e.target.value)}
               />
-              <button className="btn btn-primary btn-icon" disabled={sending || !draft.trim()} aria-label="Enviar">
+              <button className="btn btn-primary btn-icon" disabled={sending || (!draft.trim() && photos.length === 0)} aria-label="Enviar">
                 <SendIcon size={18} />
               </button>
             </form>
           </>
         )}
       </section>
+      {lightbox && <ImageLightbox attachment={lightbox} onClose={() => setLightbox(null)} />}
+      {reporting && <ReportMessageModal message={reporting} onClose={() => setReporting(null)} />}
     </div>
   );
 }

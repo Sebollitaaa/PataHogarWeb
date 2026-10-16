@@ -81,3 +81,6 @@ temp/
 
 # Carpeta de fotos de demostración (uso personal)
 /Fotos Mascotas/
+
+# ---------- Archivos privados del chat (fotos entre usuarios) ----------
+backend/storage/

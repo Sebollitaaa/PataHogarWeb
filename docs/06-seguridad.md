@@ -10,6 +10,8 @@
 | Sesiones | *Access token* JWT de 15 minutos mantenido solo en memoria; *refresh token* aleatorio de 64 bytes, persistido como hash SHA-256 y entregado en cookie `httpOnly` (`secure` en producción, `sameSite=lax`, `path=/api/auth`). |
 | Rotación | Cada renovación revoca el *refresh token* utilizado y emite uno nuevo. |
 | Cambio de contraseña con sesión iniciada | Exige un código de un solo uso enviado al correo de la cuenta (no basta con tener la sesión abierta). Conserva la sesión actual y revoca las de los demás dispositivos. |
+| Fotos del chat | Se guardan en `backend/storage/chat/` (fuera de `uploads`, sin servicio estático) y se entregan solo a los dos participantes de la conversación mediante un endpoint autenticado. Se valida el contenido real del archivo (no la extensión ni el tipo declarado), se reencodean a JPEG y se descartan los metadatos EXIF. Se borran al eliminar la publicación o la cuenta. |
+| Moderación del chat | Los participantes pueden reportar mensajes; un moderador los revisa, puede retirarlos (con aviso al autor y registro de auditoría) y solo accede a fotos de mensajes reportados. |
 | Revocación | El restablecimiento de contraseña y la suspensión revocan todas las sesiones del usuario; el cambio con sesión iniciada revoca las demás. |
 | Estado de cuenta | `requireAuth` consulta la base de datos en cada petición: una cuenta suspendida o eliminada pierde acceso de inmediato. |
 | Autorización | Verificación de rol en servidor (`requireRole`) y de propiedad del recurso (`assertOwnerOrAdmin`). |

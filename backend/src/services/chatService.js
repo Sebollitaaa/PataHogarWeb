@@ -2,26 +2,57 @@ const ApiError = require('../utils/ApiError');
 const conversationRepository = require('../models/conversationRepository');
 const messageRepository = require('../models/messageRepository');
 const notificationService = require('./notificationService');
+const chatImageService = require('./chatImageService');
 const petRepository = require('../models/petRepository');
 
-function serializeMessage(m) {
+function serializeAttachment(a) {
+  return { id: a.id, width: a.width, height: a.height };
+}
+
+/**
+ * `attachments` son las filas de message_attachments del mensaje. Un mensaje
+ * retirado por un moderador conserva su lugar en el historial pero sin contenido.
+ */
+function serializeMessage(m, attachments = m.attachments || []) {
+  const removed = Boolean(m.removed_at);
   return {
     id: m.id,
     conversationId: m.conversation_id,
     senderId: m.sender_id,
-    content: m.content,
+    content: removed ? null : m.content,
+    attachments: removed ? [] : attachments.map(serializeAttachment),
+    removed,
     createdAt: m.created_at,
     readAt: m.read_at,
   };
 }
 
+/** Serializa una lista de mensajes consultando sus adjuntos de una sola vez. */
+async function serializeMessages(rows) {
+  const attachments = await messageRepository.findAttachmentsForMessages(rows.map((m) => m.id));
+  const byMessage = {};
+  for (const a of attachments) {
+    if (!byMessage[a.message_id]) byMessage[a.message_id] = [];
+    byMessage[a.message_id].push(a);
+  }
+  return rows.map((m) => serializeMessage(m, byMessage[m.id] || []));
+}
+
+/** Texto corto para la lista de conversaciones. */
+function previewOf(message, attachmentCount = 0) {
+  if (message.removed_at) return 'Mensaje eliminado';
+  if (message.content) return message.content.slice(0, 120);
+  return attachmentCount > 1 ? `📷 ${attachmentCount} fotos` : '📷 Foto';
+}
+
 /**
  * Punto único para enviar un mensaje, usado tanto por el endpoint REST como
  * por el handler de Socket.io, así la notificación y el broadcast nunca se duplican ni se olvidan.
+ * `files`: buffers de imagen ya recibidos por multer (opcional).
  */
-async function sendMessage(io, { conversationId, senderId, content }) {
+async function sendMessage(io, { conversationId, senderId, content, files = [] }) {
   const trimmed = (content || '').trim();
-  if (!trimmed) throw new ApiError(422, 'El mensaje no puede estar vacío.');
+  if (!trimmed && files.length === 0) throw new ApiError(422, 'El mensaje no puede estar vacío.');
   if (trimmed.length > 2000) throw new ApiError(422, 'El mensaje es demasiado largo.');
 
   const convo = await conversationRepository.findById(conversationId);
@@ -32,11 +63,23 @@ async function sendMessage(io, { conversationId, senderId, content }) {
 
   const recipientId = Number(convo.user_a_id) === Number(senderId) ? convo.user_b_id : convo.user_a_id;
 
-  const messageId = await messageRepository.create({ conversation_id: convo.id, sender_id: senderId, content: trimmed });
+  // Las imágenes se validan y guardan antes de crear el mensaje: si alguna falla, no queda nada a medias.
+  const saved = files.length > 0 ? await chatImageService.saveImages(convo.id, files) : [];
+
+  let messageId;
+  try {
+    messageId = await messageRepository.create({ conversation_id: convo.id, sender_id: senderId, content: trimmed });
+    await messageRepository.addAttachments(messageId, saved);
+  } catch (err) {
+    await chatImageService.deleteFiles(convo.id, saved.flatMap((s) => [s.thumbFile, s.mediumFile]));
+    throw err;
+  }
+
   await conversationRepository.touchLastMessage(convo.id);
   await conversationRepository.reviveForRecipient(convo.id, recipientId);
 
   const message = await messageRepository.findById(messageId);
+  message.attachments = await messageRepository.findAttachmentsForMessages([messageId]);
   const pet = await petRepository.findById(convo.pet_id);
 
   const notifType = pet && Number(pet.owner_id) === Number(recipientId) ? 'new_message_on_your_pet' : 'reply_to_inquiry';
@@ -78,4 +121,4 @@ async function startConversation(io, { petId, userId, content }) {
   return { conversation: convo, message };
 }
 
-module.exports = { sendMessage, startConversation, serializeMessage };
+module.exports = { sendMessage, startConversation, serializeMessage, serializeMessages, previewOf };

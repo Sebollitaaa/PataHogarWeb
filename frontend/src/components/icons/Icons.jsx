@@ -263,3 +263,9 @@ export const ReptileIcon = (props) => (
     <path d="M12.5 16.5 14 18.5M9.5 17 9 19" />
   </Svg>
 );
+
+export const FlagIcon = (props) => (
+  <Svg {...props}>
+    <path d="M5 21V4m0 0h11l-2 4 2 4H5" />
+  </Svg>
+);
