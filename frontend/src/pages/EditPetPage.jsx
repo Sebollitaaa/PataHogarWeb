@@ -10,12 +10,15 @@ import BreedPicker, { EMPTY_BREED_VALUE, breedPayload, breedValueFromPet } from 
 import FullPageSpinner from '../components/ui/FullPageSpinner';
 import { XIcon } from '../components/icons/Icons';
 import { API_ORIGIN } from '../api/origin';
+import FillSuggestions from '../components/FillSuggestions';
+import { useLastContact } from '../hooks/useLastContact';
 import './publish.css';
 
 export default function EditPetPage() {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const lastContact = useLastContact(id);
 
   const [species, setSpecies] = useState([]);
   const [pet, setPet] = useState(null);
@@ -184,10 +187,26 @@ export default function EditPetPage() {
 
           <div className="field-row">
             <Field label="WhatsApp de contacto (opcional)" htmlFor="contactWhatsapp">
-              <input id="contactWhatsapp" className="input" value={form.contactWhatsapp} onChange={(e) => set('contactWhatsapp', e.target.value)} />
+              <input id="contactWhatsapp" className="input" placeholder="+54 9 11 1234-5678" value={form.contactWhatsapp} onChange={(e) => set('contactWhatsapp', e.target.value)} />
+              <FillSuggestions
+                current={form.contactWhatsapp}
+                onPick={(value) => set('contactWhatsapp', value)}
+                options={[
+                  { value: user?.phone, source: 'tu cuenta' },
+                  { value: lastContact.whatsapp, source: 'tu última publicación' },
+                ]}
+              />
             </Field>
             <Field label="Email de contacto (opcional)" htmlFor="contactEmail">
               <input id="contactEmail" type="email" className="input" value={form.contactEmail} onChange={(e) => set('contactEmail', e.target.value)} />
+              <FillSuggestions
+                current={form.contactEmail}
+                onPick={(value) => set('contactEmail', value)}
+                options={[
+                  { value: user?.email, source: 'tu cuenta' },
+                  { value: lastContact.email, source: 'tu última publicación' },
+                ]}
+              />
             </Field>
           </div>
 

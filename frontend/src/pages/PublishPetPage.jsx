@@ -6,6 +6,9 @@ import Field from '../components/ui/Field';
 import PhotoPicker from '../components/PhotoPicker';
 import AgeInput from '../components/AgeInput';
 import BreedPicker, { EMPTY_BREED_VALUE, breedPayload } from '../components/BreedPicker';
+import FillSuggestions from '../components/FillSuggestions';
+import { useAuth } from '../context/AuthContext';
+import { useLastContact } from '../hooks/useLastContact';
 import './publish.css';
 
 const initialForm = {
@@ -18,6 +21,8 @@ const initialForm = {
 
 export default function PublishPetPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const lastContact = useLastContact();
   const [species, setSpecies] = useState([]);
   const [form, setForm] = useState(initialForm);
   const [breedValue, setBreedValue] = useState(EMPTY_BREED_VALUE);
@@ -131,9 +136,25 @@ export default function PublishPetPage() {
           <div className="field-row">
             <Field label="WhatsApp de contacto (opcional)" htmlFor="contactWhatsapp">
               <input id="contactWhatsapp" className="input" placeholder="+54 9 11 1234-5678" value={form.contactWhatsapp} onChange={(e) => set('contactWhatsapp', e.target.value)} />
+              <FillSuggestions
+                current={form.contactWhatsapp}
+                onPick={(value) => set('contactWhatsapp', value)}
+                options={[
+                  { value: user?.phone, source: 'tu cuenta' },
+                  { value: lastContact.whatsapp, source: 'tu última publicación' },
+                ]}
+              />
             </Field>
             <Field label="Email de contacto (opcional)" htmlFor="contactEmail">
               <input id="contactEmail" type="email" className="input" value={form.contactEmail} onChange={(e) => set('contactEmail', e.target.value)} />
+              <FillSuggestions
+                current={form.contactEmail}
+                onPick={(value) => set('contactEmail', value)}
+                options={[
+                  { value: user?.email, source: 'tu cuenta' },
+                  { value: lastContact.email, source: 'tu última publicación' },
+                ]}
+              />
             </Field>
           </div>
 

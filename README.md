@@ -60,6 +60,7 @@ Plataforma web de adopción de mascotas: conecta a personas que ofrecen animales
 - Chat con envío de fotos (hasta 5 por mensaje, privadas entre los participantes) y reporte de mensajes con revisión de un moderador.
 - Favoritos y seguimiento de perfiles verificados, con aviso cuando publican una mascota nueva.
 - Panel de filtros plegable (se oculta y cada grupo se pliega).
+- Sugerencias para no reescribir datos: al publicar se ofrecen el teléfono y el email de la cuenta o de la última publicación, y al solicitar la verificación los datos del responsable (nombre, teléfono, email y ciudad).
 - Diseño adaptable a celular, tablet y escritorio (probado desde 320 px de ancho): menú compacto, grillas de dos columnas, chat a pantalla completa y campos que no provocan zoom en iPhone.
 - **Chat en tiempo real** (WebSocket) con conversaciones por mascota, agrupadas por persona.
 - Notificaciones en tiempo real y centro de notificaciones.
@@ -262,7 +263,7 @@ En este modo no se utilizan `VITE_API_URL` ni `VITE_SOCKET_URL`: el frontend usa
 
 ## Primeros pasos
 
-1. Abrir la aplicación y crear una cuenta desde **Crear cuenta**. Se envía un código de 6 dígitos al correo; al ingresarlo la cuenta queda activa. Sin `RESEND_API_KEY`, en desarrollo el código se imprime en la consola del backend.
+1. Abrir la aplicación y crear una cuenta desde **Crear cuenta**. Se envía un código de 6 dígitos al correo; al ingresarlo la cuenta queda activa y la sesión iniciada. Sin `RESEND_API_KEY`, en desarrollo el código se imprime en la consola del backend.
 2. Publicar una mascota desde **Publicar mascota**.
 3. Para otorgar permisos de administrador a un usuario, actualizar su rol en la base de datos:
 

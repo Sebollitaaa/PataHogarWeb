@@ -4,6 +4,8 @@ import { verificationRequestsApi } from '../api/verificationRequests';
 import Field from '../components/ui/Field';
 import CityAutocomplete from '../components/CityAutocomplete';
 import DocumentPicker from '../components/DocumentPicker';
+import FillSuggestions from '../components/FillSuggestions';
+import { useAuth } from '../context/AuthContext';
 import '../pages/publish.css';
 
 const initialForm = {
@@ -23,6 +25,9 @@ const initialDocuments = { statute: [], responsibleId: [], municipalPermit: [], 
 
 export default function RequestVerificationPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const fullName = user ? `${user.firstName} ${user.lastName}`.trim() : '';
+  const accountCity = user?.cityName ? `${user.cityName}, ${user.cityProvince}` : '';
   const [form, setForm] = useState(initialForm);
   const [city, setCity] = useState(null);
   const [documents, setDocuments] = useState(initialDocuments);
@@ -114,14 +119,17 @@ export default function RequestVerificationPage() {
           <div className="field-row">
             <Field label="Responsable" htmlFor="responsibleName">
               <input id="responsibleName" className="input" required value={form.responsibleName} onChange={(e) => set('responsibleName', e.target.value)} />
+              <FillSuggestions current={form.responsibleName} onPick={(v) => set('responsibleName', v)} options={[{ value: fullName, source: 'tu cuenta' }]} />
             </Field>
             <Field label="Teléfono" htmlFor="phone">
               <input id="phone" className="input" required placeholder="+54 9 11 1234-5678" value={form.phone} onChange={(e) => set('phone', e.target.value)} />
+              <FillSuggestions current={form.phone} onPick={(v) => set('phone', v)} options={[{ value: user?.phone, source: 'tu cuenta' }]} />
             </Field>
           </div>
 
           <Field label="Email de contacto" htmlFor="email">
             <input id="email" type="email" className="input" required value={form.email} onChange={(e) => set('email', e.target.value)} />
+            <FillSuggestions current={form.email} onPick={(v) => set('email', v)} options={[{ value: user?.email, source: 'tu cuenta' }]} />
           </Field>
 
           <Field label="Dirección" htmlFor="address">
@@ -130,6 +138,11 @@ export default function RequestVerificationPage() {
 
           <Field label="Ciudad o pueblo" htmlFor="city">
             <CityAutocomplete id="city" value={city} onChange={setCity} />
+            <FillSuggestions
+              current={city ? `${city.name}, ${city.province}` : ''}
+              onPick={() => setCity({ georefId: null, name: user.cityName, province: user.cityProvince })}
+              options={[{ value: accountCity, source: 'tu cuenta' }]}
+            />
           </Field>
 
           <div className="field-row">

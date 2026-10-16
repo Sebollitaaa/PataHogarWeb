@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { authApi } from '../api/auth';
+import { useAuth } from '../context/AuthContext';
 import Field from '../components/ui/Field';
 import logo from '../assets/logo-header.png';
 import './auth.css';
@@ -12,9 +13,11 @@ export default function VerifyEmailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const emailFailed = location.state?.emailSent === false;
+  const { startSession } = useAuth();
 
   const [email, setEmail] = useState(params.get('email') || '');
   const [code, setCode] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,8 +35,13 @@ export default function VerifyEmailPage() {
     setInfo('');
     setLoading(true);
     try {
-      await authApi.verifyEmail({ email, code });
-      navigate('/ingresar', { state: { verified: true } });
+      const data = await authApi.verifyEmail({ email, code, rememberMe });
+      if (data.accessToken && data.user) {
+        startSession(data);
+        navigate('/', { replace: true });
+      } else {
+        navigate('/ingresar', { state: { verified: true } });
+      }
     } catch (err) {
       setError(err.details?.length ? err.details.map((d) => d.message).join(' ') : err.message);
     } finally {
@@ -61,7 +69,7 @@ export default function VerifyEmailPage() {
         <p className="auth-card__subtitle">
           {emailFailed
             ? 'No pudimos enviar el correo todavía. Tocá "Reenviar código" para intentarlo de nuevo.'
-            : `Te enviamos un código de 6 dígitos${email ? ` a ${email}` : ''}. Ingresalo para activar tu cuenta.`}
+            : `Te enviamos un código de 6 dígitos${email ? ` a ${email}` : ''}. Ingresalo para activar tu cuenta y entrar.`}
         </p>
 
         {info && <div className="alert alert-success" style={{ marginBottom: 16 }}>{info}</div>}
@@ -79,8 +87,13 @@ export default function VerifyEmailPage() {
             />
           </Field>
 
+          <label className="checkbox-row" style={{ marginBottom: 16 }}>
+            <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
+            Recordarme en este dispositivo
+          </label>
+
           <button className="btn btn-primary btn-block" disabled={loading || code.length !== 6}>
-            {loading ? 'Verificando…' : 'Verificar cuenta'}
+            {loading ? 'Verificando…' : 'Verificar y entrar'}
           </button>
         </form>
 

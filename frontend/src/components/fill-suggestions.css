@@ -1,0 +1,31 @@
+.fill-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.fill-suggestions__chip {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 100%;
+  border: 1px dashed var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  border-radius: var(--radius-md);
+  padding: 0.3rem 0.75rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-align: left;
+}
+.fill-suggestions__chip:hover {
+  border-style: solid;
+}
+.fill-suggestions__chip strong {
+  overflow-wrap: anywhere;
+}
+.fill-suggestions__source {
+  color: var(--color-text-muted);
+  font-size: 0.74rem;
+}

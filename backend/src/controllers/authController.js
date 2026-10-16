@@ -119,7 +119,16 @@ async function verifyEmail(req, res) {
   await emailCodeService.consume(user, PURPOSES.VERIFY_EMAIL, code);
   await userRepository.update(user.id, { email_verified_at: new Date() });
 
-  res.json({ message: 'Correo verificado. Ya podés iniciar sesión.' });
+  // Haber ingresado el código demuestra que es la persona dueña de la cuenta:
+  // se inicia la sesión directamente, sin pedir de nuevo email y contraseña.
+  if (user.status === 'banned') {
+    return res.json({ message: 'Correo verificado.' });
+  }
+  const session = await issueSession(res, user, Boolean(req.body.rememberMe), req);
+  await userRepository.update(user.id, { last_login_at: new Date() });
+  const publicUser = await userRepository.findPublicById(user.id);
+
+  res.json({ message: 'Correo verificado. ¡Bienvenido/a a PataHogar!', ...session, user: toPublicUser(publicUser) });
 }
 
 // Respuesta siempre genérica: no se revela si el correo existe o si ya está verificado.

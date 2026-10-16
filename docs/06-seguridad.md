@@ -5,7 +5,7 @@
 | Área | Control |
 |---|---|
 | Credenciales | Contraseñas con bcrypt (12 rondas); nunca se persisten ni se registran en claro. Política mínima: 8 a 72 caracteres con mayúscula, minúscula, número y símbolo (validada en servidor y replicada en el cliente). |
-| Verificación de correo | La cuenta no puede iniciar sesión hasta confirmar el correo con un código de 6 dígitos de un solo uso (vence en 15 min, máximo 5 intentos, HMAC-SHA256 en base de datos, espera de 60 s entre reenvíos). |
+| Verificación de correo | La cuenta no puede iniciar sesión hasta confirmar el correo con un código de 6 dígitos de un solo uso (vence en 15 min, máximo 5 intentos, HMAC-SHA256 en base de datos, espera de 60 s entre reenvíos). Ingresar el código correcto inicia la sesión sin volver a pedir la contraseña: el código ya prueba el control del correo y solo sirve una vez. |
 | Recuperación de contraseña | Código de un solo uso enviado por correo; respuestas genéricas que no revelan si el correo existe; al restablecer se revocan todas las sesiones. |
 | Sesiones | *Access token* JWT de 15 minutos mantenido solo en memoria; *refresh token* aleatorio de 64 bytes, persistido como hash SHA-256 y entregado en cookie `httpOnly` (`secure` en producción, `sameSite=lax`, `path=/api/auth`). |
 | Rotación | Cada renovación revoca el *refresh token* utilizado y emite uno nuevo. |

@@ -120,7 +120,7 @@ Respuesta `200`: `{ accessToken, user }` y cookie `refresh_token`.
 Errores: `401` credenciales inválidas · `403` cuenta suspendida, o correo sin verificar (`error.details[0].code = "email_not_verified"`) · `429` límite de intentos.
 
 ### `POST /auth/verify-email` 🔓
-Cuerpo: `{ email, code }` (`code`: 6 dígitos). Confirma el correo y habilita el inicio de sesión.
+Cuerpo: `{ email, code, rememberMe? }` (`code`: 6 dígitos). Confirma el correo e **inicia la sesión** directamente: responde `200 { message, accessToken, user }` y emite la cookie de sesión (30 días con `rememberMe: true`, 1 día si no). Con el encabezado `X-Client: mobile` el *refresh token* viaja en el cuerpo, igual que en el login.
 Errores: `400` código incorrecto, vencido o cuenta ya verificada · `429` más de 5 intentos sobre el mismo código.
 
 ### `POST /auth/resend-verification` 🔓

@@ -27,6 +27,7 @@ const loginValidator = [
 const verifyEmailValidator = [
   body('email').trim().isEmail().withMessage('El email no es válido.').normalizeEmail(),
   codeRule(),
+  body('rememberMe').optional().isBoolean().toBoolean(),
 ];
 
 const emailOnlyValidator = [

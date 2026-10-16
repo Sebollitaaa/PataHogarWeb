@@ -35,6 +35,12 @@ export function AuthProvider({ children }) {
     return data.user;
   }, []);
 
+  // Para cuando otra pantalla ya obtuvo la sesión (por ejemplo, al verificar el correo).
+  const startSession = useCallback((data) => {
+    setAccessToken(data.accessToken);
+    setUser(data.user);
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await authApi.logout();
@@ -55,6 +61,7 @@ export function AuthProvider({ children }) {
     isAuthenticated: Boolean(user),
     isBooting,
     login,
+    startSession,
     logout,
     refreshUser,
     setUser,

@@ -121,6 +121,7 @@ Módulos por recurso: `auth`, `pets`, `catalog`, `favorites`, `follows`, `conver
 | `DocumentPicker` | Selector múltiple (hasta 10) con vista previa para imágenes e indicador de archivo para PDF. |
 | `AgeInput` | Alterna entre fecha de nacimiento y edad manual. |
 | `ChatImage`, `ImageLightbox`, `ReportMessageModal` | Foto privada del chat (descargada con la sesión), visor ampliado y formulario de reporte. |
+| `FillSuggestions` | Sugerencias "Usar …" para completar un campo con datos ya cargados (cuenta o última publicación); `useLastContact` obtiene el contacto de la última publicación. |
 | `FollowButton` | Botón Seguir / Siguiendo de los perfiles verificados. |
 | `FilterSidebar` | Panel de filtros del inicio: se oculta/muestra completo y cada grupo se pliega; muestra cuántos filtros hay aplicados. |
 | `Avatar`, `VerifiedBadge` | Foto de perfil e insignia de verificación. |
