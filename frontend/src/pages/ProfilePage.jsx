@@ -4,6 +4,9 @@ import { usersApi } from '../api/users';
 import { getBrowserLocation } from '../utils/geolocation';
 import Field from '../components/ui/Field';
 import CityAutocomplete from '../components/CityAutocomplete';
+import PasswordInput from '../components/PasswordInput';
+import PasswordRequirements from '../components/PasswordRequirements';
+import { isPasswordValid } from '../utils/passwordRules';
 import { CameraIcon, UserIcon } from '../components/icons/Icons';
 import { API_ORIGIN } from '../api/origin';
 import './profile.css';
@@ -38,6 +41,10 @@ export default function ProfilePage() {
     setError('');
     setSuccess('');
 
+    if (newPassword && !isPasswordValid(newPassword)) {
+      setError('La nueva contraseña no cumple con todos los requisitos de seguridad.');
+      return;
+    }
     if (newPassword && newPassword !== confirmNewPassword) {
       setError('Las contraseñas nuevas no coinciden.');
       return;
@@ -122,16 +129,16 @@ export default function ProfilePage() {
 
           <h3 className="profile-section-title">Cambiar contraseña</h3>
           <Field label="Contraseña actual" htmlFor="currentPassword">
-            <input id="currentPassword" type="password" className="input" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+            <PasswordInput id="currentPassword" required={false} autoComplete="current-password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
           </Field>
-          <div className="field-row">
-            <Field label="Nueva contraseña" htmlFor="newPassword">
-              <input id="newPassword" type="password" className="input" minLength={8} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-            </Field>
-            <Field label="Confirmar nueva contraseña" htmlFor="confirmNewPassword">
-              <input id="confirmNewPassword" type="password" className="input" minLength={8} value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} />
-            </Field>
-          </div>
+          <Field label="Nueva contraseña" htmlFor="newPassword">
+            <PasswordInput id="newPassword" required={false} autoComplete="new-password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+          </Field>
+          {newPassword && <PasswordRequirements value={newPassword} />}
+          <Field label="Confirmar nueva contraseña" htmlFor="confirmNewPassword"
+            error={confirmNewPassword && newPassword !== confirmNewPassword ? 'Las contraseñas no coinciden.' : undefined}>
+            <PasswordInput id="confirmNewPassword" required={false} autoComplete="new-password" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} />
+          </Field>
 
           <button className="btn btn-primary btn-block" disabled={loading} style={{ marginTop: 8 }}>
             {loading ? 'Guardando…' : 'Guardar cambios'}

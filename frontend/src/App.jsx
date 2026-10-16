@@ -9,6 +9,9 @@ import HomePage from './pages/HomePage';
 import PetDetailPage from './pages/PetDetailPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import RequestVerificationPage from './pages/RequestVerificationPage';
 import PublishPetPage from './pages/PublishPetPage';
 import EditPetPage from './pages/EditPetPage';
@@ -35,6 +38,9 @@ export default function App() {
                 <Route path="usuarios/:id" element={<PublicProfilePage />} />
                 <Route path="ingresar" element={<LoginPage />} />
                 <Route path="registro" element={<RegisterPage />} />
+                <Route path="verificar-email" element={<VerifyEmailPage />} />
+                <Route path="olvide-password" element={<ForgotPasswordPage />} />
+                <Route path="restablecer-password" element={<ResetPasswordPage />} />
 
                 <Route path="publicar" element={<ProtectedRoute><PublishPetPage /></ProtectedRoute>} />
                 <Route path="solicitar-verificacion" element={<ProtectedRoute><RequestVerificationPage /></ProtectedRoute>} />

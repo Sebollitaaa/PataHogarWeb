@@ -4,6 +4,9 @@ import { authApi } from '../api/auth';
 import { getBrowserLocation } from '../utils/geolocation';
 import Field from '../components/ui/Field';
 import CityAutocomplete from '../components/CityAutocomplete';
+import PasswordInput from '../components/PasswordInput';
+import PasswordRequirements from '../components/PasswordRequirements';
+import { isPasswordValid } from '../utils/passwordRules';
 import { MapPinIcon } from '../components/icons/Icons';
 import logo from '../assets/logo-header.png';
 import './auth.css';
@@ -36,6 +39,10 @@ export default function RegisterPage() {
     e.preventDefault();
     setError('');
 
+    if (!isPasswordValid(form.password)) {
+      setError('La contraseña no cumple con todos los requisitos de seguridad.');
+      return;
+    }
     if (form.password !== form.confirmPassword) {
       setError('Las contraseñas no coinciden.');
       return;
@@ -47,7 +54,7 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      await authApi.register({
+      const result = await authApi.register({
         firstName: form.firstName,
         lastName: form.lastName,
         email: form.email,
@@ -62,7 +69,9 @@ export default function RegisterPage() {
         verifiedLng: location?.lng,
       });
 
-      navigate('/ingresar', { state: { registered: true } });
+      navigate(`/verificar-email?email=${encodeURIComponent(form.email)}`, {
+        state: { emailSent: result.emailSent !== false },
+      });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -108,12 +117,14 @@ export default function RegisterPage() {
             {locationStatus === 'denegada' && 'No compartiste tu ubicación: vamos a usar solo la ciudad que elijas, con menor precisión para "cerca tuyo".'}
           </div>
 
-          <div className="field-row" style={{ marginTop: 16 }}>
+          <div style={{ marginTop: 16 }}>
             <Field label="Contraseña" htmlFor="password">
-              <input id="password" type="password" className="input" required minLength={8} value={form.password} onChange={(e) => set('password', e.target.value)} />
+              <PasswordInput id="password" autoComplete="new-password" value={form.password} onChange={(e) => set('password', e.target.value)} />
             </Field>
-            <Field label="Confirmar contraseña" htmlFor="confirmPassword">
-              <input id="confirmPassword" type="password" className="input" required minLength={8} value={form.confirmPassword} onChange={(e) => set('confirmPassword', e.target.value)} />
+            <PasswordRequirements value={form.password} />
+            <Field label="Confirmar contraseña" htmlFor="confirmPassword"
+              error={form.confirmPassword && form.password !== form.confirmPassword ? 'Las contraseñas no coinciden.' : undefined}>
+              <PasswordInput id="confirmPassword" autoComplete="new-password" value={form.confirmPassword} onChange={(e) => set('confirmPassword', e.target.value)} />
             </Field>
           </div>
 

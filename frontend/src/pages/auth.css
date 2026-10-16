@@ -73,3 +73,27 @@
   .field-row { grid-template-columns: 1fr; }
   .auth-card { padding: var(--space-5); }
 }
+
+.code-input {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.5em;
+  padding-left: 0.5em;
+  font-variant-numeric: tabular-nums;
+}
+
+.auth-card .link-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.auth-card .link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: inherit;
+  cursor: pointer;
+}

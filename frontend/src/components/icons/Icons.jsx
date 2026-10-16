@@ -108,6 +108,21 @@ export const CameraIcon = (props) => (
   </Svg>
 );
 
+export const EyeIcon = (props) => (
+  <Svg {...props}>
+    <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" />
+    <circle cx="12" cy="12" r="3" />
+  </Svg>
+);
+
+export const EyeOffIcon = (props) => (
+  <Svg {...props}>
+    <path d="M3 3l18 18" />
+    <path d="M10.6 5.1A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.7A17.3 17.3 0 0 0 2 12s3.6 7 10 7a10 10 0 0 0 4.4-1" />
+    <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+  </Svg>
+);
+
 export const FileIcon = (props) => (
   <Svg {...props}>
     <path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" />
