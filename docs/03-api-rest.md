@@ -99,18 +99,33 @@ Crea una cuenta activa.
 |---|---|---|
 | `firstName`, `lastName` | string | 2–100 caracteres |
 | `email` | string | correo válido (se normaliza) |
-| `password` | string | mínimo 8 caracteres |
+| `password` | string | 8–72 caracteres con al menos una mayúscula, una minúscula, un número y un símbolo |
 | `phone` | string | `^[0-9+\s-]{6,30}$` |
 | `cityGeorefId`, `cityName`, `cityProvince` | string | obligatorios |
 | `cityLat`, `cityLng` | number | rangos geográficos válidos |
 | `verifiedLat`, `verifiedLng` | number | opcionales |
 
-Respuestas: `201 { message, email }` · `409` correo existente · `422` validación o discrepancia de ubicación mayor a `LOCATION_MISMATCH_BLOCK_KM`.
+Crea la cuenta **sin verificar** y envía un código de 6 dígitos al correo.
+
+Respuestas: `201 { message, email, requiresVerification: true, emailSent }` · `409` correo ya registrado y verificado · `422` validación o discrepancia de ubicación mayor a `LOCATION_MISMATCH_BLOCK_KM`.
 
 ### `POST /auth/login` 🔓
 Cuerpo: `{ email, password, rememberMe? }`.
 Respuesta `200`: `{ accessToken, user }` y cookie `refresh_token`.
-Errores: `401` credenciales inválidas · `403` cuenta suspendida · `429` límite de intentos.
+Errores: `401` credenciales inválidas · `403` cuenta suspendida, o correo sin verificar (`error.details[0].code = "email_not_verified"`) · `429` límite de intentos.
+
+### `POST /auth/verify-email` 🔓
+Cuerpo: `{ email, code }` (`code`: 6 dígitos). Confirma el correo y habilita el inicio de sesión.
+Errores: `400` código incorrecto, vencido o cuenta ya verificada · `429` más de 5 intentos sobre el mismo código.
+
+### `POST /auth/resend-verification` 🔓
+Cuerpo: `{ email }`. Genera y envía un código nuevo (invalida los anteriores; espera mínima de 60 s entre envíos). La respuesta es siempre genérica: no revela si el correo existe.
+
+### `POST /auth/forgot-password` 🔓
+Cuerpo: `{ email }`. Envía un código para restablecer la contraseña. Respuesta siempre genérica.
+
+### `POST /auth/reset-password` 🔓
+Cuerpo: `{ email, code, newPassword }` (la contraseña cumple la política de seguridad). Cambia la contraseña y revoca todas las sesiones. Errores: `400` código incorrecto o vencido · `422` contraseña no válida.
 
 ### `POST /auth/refresh` 🔓 (requiere cookie)
 Rota el *refresh token* y devuelve `{ accessToken, user }`. `401` si la cookie falta, está revocada o venció.
@@ -251,7 +266,7 @@ Todos los campos son opcionales.
 |---|---|
 | `phone` | Nuevo teléfono. |
 | `cityGeorefId`, `cityName`, `cityProvince`, `cityLat`, `cityLng` | Nueva localidad (se valida contra `verifiedLat`/`verifiedLng` si se envían). |
-| `currentPassword`, `newPassword`, `confirmNewPassword` | Cambio de contraseña (mínimo 8). Revoca todas las sesiones. |
+| `currentPassword`, `newPassword`, `confirmNewPassword` | Cambio de contraseña (política: 8+ caracteres, mayúscula, minúscula, número y símbolo). Revoca todas las sesiones. |
 | `profilePhoto` | Imagen de perfil. |
 
 Respuesta: `{ user, passwordChanged }`.

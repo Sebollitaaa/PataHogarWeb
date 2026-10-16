@@ -4,7 +4,9 @@
 
 | Área | Control |
 |---|---|
-| Credenciales | Contraseñas con bcrypt (12 rondas); nunca se persisten ni se registran en claro. |
+| Credenciales | Contraseñas con bcrypt (12 rondas); nunca se persisten ni se registran en claro. Política mínima: 8 a 72 caracteres con mayúscula, minúscula, número y símbolo (validada en servidor y replicada en el cliente). |
+| Verificación de correo | La cuenta no puede iniciar sesión hasta confirmar el correo con un código de 6 dígitos de un solo uso (vence en 15 min, máximo 5 intentos, HMAC-SHA256 en base de datos, espera de 60 s entre reenvíos). |
+| Recuperación de contraseña | Código de un solo uso enviado por correo; respuestas genéricas que no revelan si el correo existe; al restablecer se revocan todas las sesiones. |
 | Sesiones | *Access token* JWT de 15 minutos mantenido solo en memoria; *refresh token* aleatorio de 64 bytes, persistido como hash SHA-256 y entregado en cookie `httpOnly` (`secure` en producción, `sameSite=lax`, `path=/api/auth`). |
 | Rotación | Cada renovación revoca el *refresh token* utilizado y emite uno nuevo. |
 | Revocación | El cambio de contraseña y la suspensión revocan todas las sesiones del usuario. |
@@ -35,6 +37,5 @@
 | Acceso a documentos de verificación | El directorio `uploads` se sirve como contenido estático, incluida la subcarpeta `verification-documents`. Los nombres de archivo no son predecibles (UUID), pero el acceso no requiere autenticación. | Excluir esa subcarpeta del servicio estático y exponerla, si fuera necesario, mediante un endpoint autenticado. El cliente de escritorio accede por ruta de sistema de archivos y no se ve afectado. |
 | Datos huérfanos en disco | La eliminación de una cuenta no borra `uploads/users/<id>` ni `uploads/verification-documents/<id>`. | Incorporar la limpieza al flujo de eliminación. |
 | Reconexión de WebSocket | El *access token* se envía solo al conectar; una reconexión con un token vencido es rechazada hasta recargar la aplicación. | Renovar el token antes de reconectar. |
-| Recuperación de contraseña | No existe un mecanismo de restablecimiento de contraseña. | Implementar un flujo mediante enlace de un solo uso. |
 | Pruebas automatizadas | No hay pruebas unitarias ni de integración. | Incorporar pruebas sobre servicios y endpoints críticos. |
 | Protección CSRF | No se utiliza *token* CSRF dedicado; se mitiga con `sameSite=lax` y autenticación por cabecera `Authorization`. | Evaluar *tokens* CSRF si se amplían los endpoints basados en cookie. |

@@ -38,6 +38,8 @@ Plataforma web de adopción de mascotas: conecta a personas que ofrecen animales
 
 **Cuentas y sesiones**
 - Registro e inicio de sesión con contraseñas almacenadas mediante hash (bcrypt).
+- **Verificación de correo** con código de 6 dígitos y **recuperación de contraseña** por correo (Resend).
+- **Política de contraseñas** (8+ caracteres, mayúscula, minúscula, número y símbolo) con checklist en vivo y opción para ver la contraseña.
 - Autenticación con JWT de corta duración y *refresh token* rotativo en cookie `httpOnly`, con opción "Recordarme".
 - Roles de usuario y administrador; suspensión de cuentas.
 
@@ -80,7 +82,7 @@ Plataforma web de adopción de mascotas: conecta a personas que ofrecen animales
 | **Autenticación** | JSON Web Tokens, bcrypt, cookies `httpOnly` |
 | **Archivos e imágenes** | Multer, Sharp |
 | **Validación y seguridad** | express-validator, Helmet, CORS, express-rate-limit |
-| **Servicios externos** | API Georef (Gobierno de Argentina) para localidades |
+| **Servicios externos** | API Georef (Gobierno de Argentina) para localidades; Resend para el envío de correos |
 
 ---
 
@@ -184,6 +186,8 @@ cp .env.example .env      # en Windows (PowerShell): Copy-Item .env.example .env
 | `JWT_REFRESH_EXPIRES_IN_DAYS_REMEMBER` | No | Días de sesión con "Recordarme". | `30` |
 | `JWT_REFRESH_EXPIRES_IN_DAYS_SESSION` | No | Días de sesión sin "Recordarme". | `1` |
 | `LOCATION_MISMATCH_BLOCK_KM` | No | Distancia máxima (km) tolerada entre la ciudad elegida y la geolocalización real. | `100` |
+| `RESEND_API_KEY` | En producción | Clave de [Resend](https://resend.com) para enviar los correos de verificación y recuperación. Sin ella, en desarrollo los correos se simulan y el código aparece en la consola del backend. | — |
+| `EMAIL_FROM` | Recomendada | Remitente de los correos (dominio verificado en Resend). | `PataHogar <no-reply@tu-dominio.com>` |
 
 Para generar los secretos JWT (ejecutar dos veces, un valor distinto para cada secreto):
 
@@ -254,7 +258,7 @@ En este modo no se utilizan `VITE_API_URL` ni `VITE_SOCKET_URL`: el frontend usa
 
 ## Primeros pasos
 
-1. Abrir la aplicación y crear una cuenta desde **Crear cuenta**. La cuenta queda activa de inmediato.
+1. Abrir la aplicación y crear una cuenta desde **Crear cuenta**. Se envía un código de 6 dígitos al correo; al ingresarlo la cuenta queda activa. Sin `RESEND_API_KEY`, en desarrollo el código se imprime en la consola del backend.
 2. Publicar una mascota desde **Publicar mascota**.
 3. Para otorgar permisos de administrador a un usuario, actualizar su rol en la base de datos:
 

@@ -30,6 +30,11 @@ La versión de Node.js requerida se declara en `engines` de los `package.json` y
 | `JWT_REFRESH_EXPIRES_IN_DAYS_REMEMBER` | No | `30` | Días de vigencia con "Recordarme". |
 | `JWT_REFRESH_EXPIRES_IN_DAYS_SESSION` | No | `1` | Días de vigencia sin "Recordarme". |
 | `LOCATION_MISMATCH_BLOCK_KM` | No | `100` | Distancia máxima tolerada entre la ciudad declarada y la geolocalización. |
+| `RESEND_API_KEY` | En producción | — | Clave de la API de Resend para enviar correos. Sin ella, fuera de producción los correos se simulan y el código se imprime en la consola del backend. |
+| `EMAIL_FROM` | Recomendada | `PataHogar <no-reply@example.com>` | Remitente; debe pertenecer a un dominio verificado en Resend. |
+| `EMAIL_CODE_EXPIRES_MIN` | No | `15` | Vigencia de los códigos. |
+| `EMAIL_RESEND_COOLDOWN_SECONDS` | No | `60` | Espera mínima entre dos envíos de código. |
+| `EMAIL_CODE_MAX_ATTEMPTS` | No | `5` | Intentos permitidos por código. |
 
 El servidor no inicia si falta una variable obligatoria (`Falta la variable de entorno obligatoria: <NOMBRE>`).
 

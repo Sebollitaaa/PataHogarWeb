@@ -58,6 +58,7 @@ Cuentas de la plataforma (usuarios, administradores y organizaciones).
 | `role` | ENUM(`user`,`admin`) | NOT NULL, default `user` | Rol. |
 | `status` | ENUM(`active`,`banned`) | NOT NULL, default `active` | Estado de la cuenta. |
 | `is_verified_organization` | TINYINT(1) | NOT NULL, default 0 | Indica organización verificada (insignia). |
+| `email_verified_at` | TIMESTAMP | NULL | Fecha de confirmación del correo; nulo = cuenta sin verificar (no puede iniciar sesión). |
 | `last_login_at` | TIMESTAMP | NULL | Último inicio de sesión. |
 
 Índices: `city_id`, `role`, `status`.
@@ -217,6 +218,22 @@ Registro de auditoría de acciones de moderación.
 
 Índices: `admin_id`, `(target_type, target_id)`.
 
+### `email_codes`
+
+Códigos de un solo uso enviados por correo (verificación de cuenta y recuperación de contraseña).
+
+| Columna | Tipo | Restricciones | Descripción |
+|---|---|---|---|
+| `id` | INT UNSIGNED | PK, AI | |
+| `user_id` | INT UNSIGNED | NOT NULL, FK → `users.id` (CASCADE) | Destinatario. |
+| `purpose` | ENUM(`verify_email`,`reset_password`) | NOT NULL | Finalidad del código. |
+| `code_hash` | VARCHAR(64) | NOT NULL | HMAC-SHA256 del código (el código nunca se persiste en claro). |
+| `expires_at` | TIMESTAMP | NOT NULL | Vencimiento (15 min por defecto). |
+| `used_at` | TIMESTAMP | NULL | Consumido o invalidado por uno posterior. |
+| `attempts` | INT UNSIGNED | NOT NULL, default 0 | Intentos fallidos (máximo 5 por código). |
+
+Índices: `(user_id, purpose)`, `expires_at`.
+
 ### `verification_requests`
 
 Solicitudes de verificación de organizaciones.
@@ -292,6 +309,7 @@ Ubicación: `backend/src/db/migrations`. Se aplican en orden cronológico (`npm 
 | `20260827145445_add_age_fields_to_pets` | Agrega `age_mode`, `birth_date` y `age_days`. |
 | `20260916190000_remove_email_verification_system` | Elimina estructuras de un mecanismo de verificación descartado (tabla `verification_codes` y columnas asociadas de `users`) en bases que las contuvieran. |
 | `20260916200000_create_verification_requests` | Crea `verification_requests` y `verification_documents`. |
+| `20261015120000_add_email_verification` | Agrega `users.email_verified_at` (las cuentas existentes se marcan como verificadas) y crea `email_codes`. |
 | `20260916210000_add_verification_badge_system` | Agrega `users.is_verified_organization`, `verification_requests.user_notified_at` y los tipos de notificación `verification_approved` y `verification_rejected`. |
 
 ## 2.6 Datos iniciales (*seeds*)
