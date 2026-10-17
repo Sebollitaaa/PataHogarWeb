@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { usersApi } from '../api/users';
 import { followsApi } from '../api/follows';
 import FollowButton from '../components/FollowButton';
+import NotFoundPage from './NotFoundPage';
 import PetCard from '../components/PetCard';
 import Avatar from '../components/Avatar';
 import VerifiedBadge from '../components/VerifiedBadge';
@@ -39,7 +40,7 @@ export default function PublicProfilePage() {
   }, [id, me]);
 
   if (notFound) {
-    return <div className="container" style={{ padding: '60px 0', textAlign: 'center' }}><p>No encontramos a este usuario.</p></div>;
+    return <NotFoundPage title="No encontramos este perfil" message="La cuenta no existe o ya no está disponible." />;
   }
   if (!data) return <FullPageSpinner />;
 

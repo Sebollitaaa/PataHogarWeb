@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import NotFoundPage from './NotFoundPage';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { petsApi } from '../api/pets';
 import { favoritesApi } from '../api/favorites';
@@ -19,6 +20,7 @@ export default function PetDetailPage() {
   const navigate = useNavigate();
 
   const [pet, setPet] = useState(null);
+  const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activePhoto, setActivePhoto] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -33,6 +35,7 @@ export default function PetDetailPage() {
 
   async function load() {
     setLoading(true);
+    setNotFound(false);
     try {
       const { pet } = await petsApi.getOne(id);
       setPet(pet);
@@ -41,6 +44,8 @@ export default function PetDetailPage() {
         const favs = await favoritesApi.list();
         setIsFavorite(favs.pets.some((p) => p.id === Number(id)));
       }
+    } catch (err) {
+      if (err.status === 404) setNotFound(true);
     } finally {
       setLoading(false);
     }
@@ -81,6 +86,9 @@ export default function PetDetailPage() {
   }
 
   if (loading) return <FullPageSpinner />;
+  if (notFound) {
+    return <NotFoundPage title="Esta publicación ya no está" message="Puede que la mascota haya sido adoptada y la publicación se haya eliminado, o que el enlace esté mal." />;
+  }
   if (!pet) return null;
 
   const isOwner = isAuthenticated && user.id === pet.owner.id;
