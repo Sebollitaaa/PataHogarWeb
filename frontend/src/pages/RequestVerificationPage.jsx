@@ -5,6 +5,8 @@ import Field from '../components/ui/Field';
 import CityAutocomplete from '../components/CityAutocomplete';
 import DocumentPicker from '../components/DocumentPicker';
 import FillSuggestions from '../components/FillSuggestions';
+import PhoneInput from '../components/PhoneInput';
+import { toNationalDisplay } from '../utils/phone';
 import { useAuth } from '../context/AuthContext';
 import '../pages/publish.css';
 
@@ -122,8 +124,8 @@ export default function RequestVerificationPage() {
               <FillSuggestions current={form.responsibleName} onPick={(v) => set('responsibleName', v)} options={[{ value: fullName, source: 'tu cuenta' }]} />
             </Field>
             <Field label="Teléfono" htmlFor="phone">
-              <input id="phone" className="input" required placeholder="+54 9 11 1234-5678" value={form.phone} onChange={(e) => set('phone', e.target.value)} />
-              <FillSuggestions current={form.phone} onPick={(v) => set('phone', v)} options={[{ value: user?.phone, source: 'tu cuenta' }]} />
+              <PhoneInput id="phone" required value={form.phone} onChange={(v) => set('phone', v)} />
+              <FillSuggestions current={toNationalDisplay(form.phone)} onPick={(v) => set('phone', v)} options={[{ value: toNationalDisplay(user?.phone), source: 'tu cuenta' }]} />
             </Field>
           </div>
 

@@ -1,5 +1,6 @@
 const { body } = require('express-validator');
 const { passwordRule } = require('./passwordPolicy');
+const { phoneRule } = require('../utils/phone');
 
 const codeRule = () => body('code').trim().matches(/^\d{6}$/).withMessage('El código debe tener 6 dígitos.');
 
@@ -8,7 +9,7 @@ const registerValidator = [
   body('lastName').trim().isLength({ min: 2, max: 100 }).withMessage('El apellido debe tener al menos 2 caracteres.'),
   body('email').trim().isEmail().withMessage('El email no es válido.').normalizeEmail(),
   passwordRule(body('password')),
-  body('phone').trim().matches(/^[0-9+\s-]{6,30}$/).withMessage('El teléfono no es válido.'),
+  phoneRule(body('phone').trim()),
   body('cityGeorefId').notEmpty().withMessage('Elegí tu ciudad de la lista de sugerencias.'),
   body('cityName').trim().notEmpty(),
   body('cityProvince').trim().notEmpty(),

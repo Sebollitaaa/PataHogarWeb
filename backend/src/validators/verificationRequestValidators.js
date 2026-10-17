@@ -1,11 +1,12 @@
 const { body } = require('express-validator');
+const { phoneRule } = require('../utils/phone');
 
 const createVerificationRequestValidator = [
   body('organizationName').trim().isLength({ min: 2, max: 150 }).withMessage('El nombre de la organización es obligatorio.'),
   body('organizationType').isIn(['refugio', 'veterinaria', 'asociacion']).withMessage('Elegí el tipo de organización.'),
   body('responsibleName').trim().isLength({ min: 2, max: 150 }).withMessage('El nombre del responsable es obligatorio.'),
   body('email').trim().isEmail().withMessage('El email no es válido.').normalizeEmail(),
-  body('phone').trim().matches(/^[0-9+\s-]{6,30}$/).withMessage('El teléfono no es válido.'),
+  phoneRule(body('phone').trim()),
   body('address').trim().isLength({ min: 5, max: 255 }).withMessage('La dirección es obligatoria.'),
   body('city').trim().isLength({ min: 2, max: 120 }).withMessage('La ciudad es obligatoria.'),
   body('province').trim().isLength({ min: 2, max: 120 }).withMessage('La provincia es obligatoria.'),

@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { authApi } from '../api/auth';
 import { getBrowserLocation } from '../utils/geolocation';
 import Field from '../components/ui/Field';
+import PhoneInput from '../components/PhoneInput';
+import { PHONE_HINT, isValidPhone } from '../utils/phone';
 import CityAutocomplete from '../components/CityAutocomplete';
 import PasswordInput from '../components/PasswordInput';
 import PasswordRequirements from '../components/PasswordRequirements';
@@ -49,6 +51,10 @@ export default function RegisterPage() {
     }
     if (!city) {
       setError('Elegí tu ciudad de la lista de sugerencias.');
+      return;
+    }
+    if (!isValidPhone(form.phone)) {
+      setError('El teléfono no es válido: código de área sin 0 y número sin 15 (10 dígitos). Ej.: 291 555-0103.');
       return;
     }
 
@@ -102,8 +108,8 @@ export default function RegisterPage() {
             <input id="email" type="email" className="input" required value={form.email} onChange={(e) => set('email', e.target.value)} />
           </Field>
 
-          <Field label="Teléfono" htmlFor="phone" hint="Lo van a usar otros usuarios para contactarte por WhatsApp si vos lo permitís.">
-            <input id="phone" className="input" required placeholder="+54 9 11 1234-5678" value={form.phone} onChange={(e) => set('phone', e.target.value)} />
+          <Field label="Teléfono" htmlFor="phone" hint={`${PHONE_HINT}. Lo van a usar otros usuarios para contactarte por WhatsApp si vos lo permitís.`}>
+            <PhoneInput id="phone" required value={form.phone} onChange={(v) => set('phone', v)} />
           </Field>
 
           <Field label="Ciudad o pueblo" htmlFor="city">

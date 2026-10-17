@@ -12,6 +12,10 @@
 
 **Leyenda de acceso:** 🔓 público · 🔐 requiere autenticación · 🛡️ requiere rol `admin`.
 
+### Teléfonos
+
+Todos los campos de teléfono (`phone` del registro, de `PATCH /users/me` y de la solicitud de verificación, y `contactWhatsapp` de las publicaciones) aceptan un número de Argentina escrito de cualquier forma habitual (`291 555-0103`, `0291 15 555-0103`, `+54 9 291 555 0103`…). El servidor quita el 0 de larga distancia, el 15 y los prefijos 54 / 9, exige 10 dígitos (código de área + número) y guarda siempre el mismo formato, apto para los enlaces de WhatsApp: `+54 9 291 555-0103` (o `+54 9 11 5555-0103`). Si no se puede interpretar, responde `422`.
+
 ### Formato de error
 
 Todos los errores comparten el mismo formato:
@@ -106,7 +110,7 @@ Crea una cuenta activa.
 | `firstName`, `lastName` | string | 2–100 caracteres |
 | `email` | string | correo válido (se normaliza) |
 | `password` | string | 8–72 caracteres con al menos una mayúscula, una minúscula, un número y un símbolo |
-| `phone` | string | `^[0-9+\s-]{6,30}$` |
+| `phone` | string | Teléfono de Argentina (ver *Teléfonos*) |
 | `cityGeorefId`, `cityName`, `cityProvince` | string | obligatorios |
 | `cityLat`, `cityLng` | number | rangos geográficos válidos |
 | `verifiedLat`, `verifiedLng` | number | opcionales |

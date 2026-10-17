@@ -6,6 +6,8 @@ import { getBrowserLocation } from '../utils/geolocation';
 import Field from '../components/ui/Field';
 import CityAutocomplete from '../components/CityAutocomplete';
 import ChangePasswordCard from '../components/ChangePasswordCard';
+import PhoneInput from '../components/PhoneInput';
+import { PHONE_HINT } from '../utils/phone';
 import { CameraIcon, UserIcon } from '../components/icons/Icons';
 import { API_ORIGIN } from '../api/origin';
 import './profile.css';
@@ -100,8 +102,8 @@ export default function ProfilePage() {
           <Field label="Email">
             <input className="input" value={user.email} disabled />
           </Field>
-          <Field label="Teléfono" htmlFor="phone">
-            <input id="phone" className="input" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <Field label="Teléfono" htmlFor="phone" hint={PHONE_HINT}>
+            <PhoneInput id="phone" value={phone} onChange={setPhone} />
           </Field>
           <Field label="Ciudad" htmlFor="city" hint="Si la cambiás, te vamos a pedir tu ubicación de nuevo para verificarla.">
             <CityAutocomplete id="city" value={city} onChange={setCity} />

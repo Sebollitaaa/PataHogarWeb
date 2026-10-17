@@ -7,6 +7,8 @@ import PhotoPicker from '../components/PhotoPicker';
 import AgeInput, { validateAge } from '../components/AgeInput';
 import BreedPicker, { EMPTY_BREED_VALUE, breedPayload } from '../components/BreedPicker';
 import FillSuggestions from '../components/FillSuggestions';
+import PhoneInput from '../components/PhoneInput';
+import { toNationalDisplay } from '../utils/phone';
 import { useAuth } from '../context/AuthContext';
 import { useLastContact } from '../hooks/useLastContact';
 import './publish.css';
@@ -140,13 +142,13 @@ export default function PublishPetPage() {
 
           <div className="field-row">
             <Field label="WhatsApp de contacto (opcional)" htmlFor="contactWhatsapp">
-              <input id="contactWhatsapp" className="input" placeholder="+54 9 11 1234-5678" value={form.contactWhatsapp} onChange={(e) => set('contactWhatsapp', e.target.value)} />
+              <PhoneInput id="contactWhatsapp" value={form.contactWhatsapp} onChange={(v) => set('contactWhatsapp', v)} />
               <FillSuggestions
-                current={form.contactWhatsapp}
+                current={toNationalDisplay(form.contactWhatsapp)}
                 onPick={(value) => set('contactWhatsapp', value)}
                 options={[
-                  { value: user?.phone, source: 'tu cuenta' },
-                  { value: lastContact.whatsapp, source: 'tu última publicación' },
+                  { value: toNationalDisplay(user?.phone), source: 'tu cuenta' },
+                  { value: toNationalDisplay(lastContact.whatsapp), source: 'tu última publicación' },
                 ]}
               />
             </Field>
