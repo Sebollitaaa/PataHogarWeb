@@ -14,6 +14,10 @@ module.exports = {
       env: {
         NODE_ENV: 'development',
       },
+      // En el servidor: pm2 start ecosystem.config.js --env production
+      env_production: {
+        NODE_ENV: 'production',
+      },
       out_file: 'logs/out.log',
       error_file: 'logs/error.log',
       merge_logs: true,
