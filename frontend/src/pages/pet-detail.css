@@ -148,3 +148,4 @@
 .pet-detail__title-row h1 {
   min-width: 0;
 }
+.pet-detail__status-badge { z-index: 3; }

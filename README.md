@@ -61,6 +61,7 @@ Plataforma web de adopción de mascotas: conecta a personas que ofrecen animales
 - Chat con envío de fotos (hasta 5 por mensaje, privadas entre los participantes) y reporte de mensajes con revisión de un moderador.
 - Favoritos y seguimiento de perfiles verificados, con aviso cuando publican una mascota nueva.
 - Panel de filtros plegable (se oculta y cada grupo se pliega).
+- Galería de fotos estilo tienda: deslizar o usar flechas, ver en pantalla completa con zoom (doble toque, pellizcar o rueda del mouse), y fotos acomodadas según su forma; se guardan comprimidas en WebP.
 - Teléfonos con el "+54" separado y fijo: se escribe solo código de área y número, y el sistema los guarda con el mismo formato (listo para WhatsApp).
 - Sugerencias para no reescribir datos: al publicar se ofrecen el teléfono y el email de la cuenta o de la última publicación, y al solicitar la verificación los datos del responsable (nombre, teléfono, email y ciudad).
 - Diseño adaptable a celular, tablet y escritorio (probado desde 320 px de ancho): menú compacto, grillas de dos columnas, chat a pantalla completa y campos que no provocan zoom en iPhone.

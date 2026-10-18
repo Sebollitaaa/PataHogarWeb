@@ -95,7 +95,7 @@ Módulos por recurso: `auth`, `pets`, `catalog`, `favorites`, `follows`, `conver
 | Página | Descripción |
 |---|---|
 | `HomePage` | Buscador con alternancia Mascotas/Personas, filtros, grilla paginada, estadísticas. Aplica por defecto la ciudad del usuario autenticado. Las búsquedas se ejecutan con *debounce* de 300 ms. |
-| `PetDetailPage` | Galería, datos, contacto, favorito, gestión del propietario, moderación de administrador y formulario de mensaje inicial. |
+| `PetDetailPage` | Galería (`PetGallery`: flechas, deslizar, teclado, contador y miniaturas; fotos que no encajan en el recuadro se muestran enteras sobre un fondo desenfocado), visor a pantalla completa con zoom (`PhotoViewer`), datos, contacto, favorito, gestión del propietario, moderación de administrador y formulario de mensaje inicial. |
 | `PublishPetPage` / `EditPetPage` | Alta y edición de publicaciones, incluida la gestión de fotos. |
 | `MyListingsPage`, `AdoptedPage` | Listados filtrados del usuario. |
 | `FavoritesPage` | Pestañas "Mascotas" (favoritas) y "Siguiendo" (perfiles verificados que sigue el usuario). |

@@ -5,10 +5,11 @@ const sharp = require('sharp');
 
 const UPLOADS_ROOT = path.join(__dirname, '..', '..', 'uploads');
 
+// WebP pesa ~25-35 % menos que JPEG con la misma calidad visual.
 const SIZES = {
-  thumbnail: { width: 320, height: 320, quality: 75, fit: 'cover' },
-  medium: { width: 800, quality: 80, fit: 'inside' },
-  original: { width: 1600, quality: 85, fit: 'inside' },
+  thumbnail: { width: 320, height: 320, quality: 72, fit: 'cover' },
+  medium: { width: 800, quality: 78, fit: 'inside' },
+  original: { width: 1440, quality: 82, fit: 'inside' },
 };
 
 async function ensureDir(dirPath) {
@@ -16,8 +17,11 @@ async function ensureDir(dirPath) {
 }
 
 /**
- * Procesa una imagen subida y genera thumbnail/medium/original comprimidos,
- * guardados en uploads/<namespace>/<entityId>/. Devuelve las URLs públicas relativas.
+ * Procesa una imagen subida y genera thumbnail/medium/original comprimidos en WebP,
+ * guardados en uploads/<namespace>/<entityId>/. `rotate()` aplica la orientación de
+ * la cámara y descarta los metadatos EXIF (incluida la ubicación).
+ * Devuelve las URLs públicas relativas y las medidas de la versión grande
+ * (`width`/`height`), que el cliente usa para acomodar la foto en su recuadro.
  */
 async function processImage(buffer, namespace, entityId) {
   const dir = path.join(UPLOADS_ROOT, namespace, String(entityId));
@@ -27,19 +31,30 @@ async function processImage(buffer, namespace, entityId) {
   const urls = {};
 
   for (const [variant, opts] of Object.entries(SIZES)) {
-    const fileName = `${baseName}-${variant}.jpg`;
+    const fileName = `${baseName}-${variant}.webp`;
     const filePath = path.join(dir, fileName);
 
     let pipeline = sharp(buffer).rotate();
     pipeline = opts.fit === 'cover'
       ? pipeline.resize(opts.width, opts.height, { fit: 'cover' })
-      : pipeline.resize({ width: opts.width, withoutEnlargement: true });
+      : pipeline.resize({ width: opts.width, height: opts.width, fit: 'inside', withoutEnlargement: true });
 
-    await pipeline.jpeg({ quality: opts.quality }).toFile(filePath);
+    const info = await pipeline.webp({ quality: opts.quality }).toFile(filePath);
     urls[variant] = `/uploads/${namespace}/${entityId}/${fileName}`;
+    if (variant === 'original') {
+      urls.width = info.width;
+      urls.height = info.height;
+    }
   }
 
   return urls;
+}
+
+/** Medidas de una imagen ya guardada (para fotos subidas antes de registrarlas). */
+async function readSize(publicUrl) {
+  const filePath = path.join(UPLOADS_ROOT, publicUrl.replace(/^\/uploads\//, ''));
+  const meta = await sharp(filePath).metadata();
+  return { width: meta.width, height: meta.height };
 }
 
 async function deleteEntityImages(namespace, entityId) {
@@ -47,4 +62,4 @@ async function deleteEntityImages(namespace, entityId) {
   await fs.rm(dir, { recursive: true, force: true });
 }
 
-module.exports = { processImage, deleteEntityImages };
+module.exports = { processImage, deleteEntityImages, readSize };

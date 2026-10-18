@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import NotFoundPage from './NotFoundPage';
+import PetGallery from '../components/PetGallery';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { petsApi } from '../api/pets';
 import { favoritesApi } from '../api/favorites';
@@ -11,7 +12,6 @@ import {
   HeartIcon, WhatsAppIcon, MailIcon, EditIcon, TrashIcon, AlertIcon,
 } from '../components/icons/Icons';
 import { formatAge, sizeLabel, sexLabel, statusLabel } from '../utils/format';
-import { API_ORIGIN } from '../api/origin';
 import './pet-detail.css';
 
 export default function PetDetailPage() {
@@ -22,7 +22,6 @@ export default function PetDetailPage() {
   const [pet, setPet] = useState(null);
   const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [activePhoto, setActivePhoto] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -39,7 +38,6 @@ export default function PetDetailPage() {
     try {
       const { pet } = await petsApi.getOne(id);
       setPet(pet);
-      setActivePhoto(0);
       if (isAuthenticated) {
         const favs = await favoritesApi.list();
         setIsFavorite(favs.pets.some((p) => p.id === Number(id)));
@@ -93,32 +91,19 @@ export default function PetDetailPage() {
 
   const isOwner = isAuthenticated && user.id === pet.owner.id;
   const isAdmin = isAuthenticated && user.role === 'admin';
-  const photos = pet.photos.length ? pet.photos : [{ id: 0, medium: null }];
 
   return (
     <div className="container pet-detail">
       <div className="pet-detail__gallery">
-        <div className="pet-detail__main-photo">
-          {photos[activePhoto]?.medium ? (
-            <img src={`${API_ORIGIN}${photos[activePhoto].original}`} alt={pet.name} />
-          ) : (
-            <div className="pet-detail__main-photo--empty" />
-          )}
-          {pet.status !== 'disponible' && (
+        <PetGallery
+          photos={pet.photos}
+          alt={pet.name}
+          badge={pet.status !== 'disponible' && (
             <span className={`badge badge-${pet.status === 'adoptada' ? 'success' : pet.status === 'en_proceso' ? 'warning' : 'danger'} pet-detail__status-badge`}>
               {statusLabel(pet.status)}
             </span>
           )}
-        </div>
-        {photos.length > 1 && (
-          <div className="pet-detail__thumbs">
-            {photos.map((p, i) => (
-              <button key={p.id} className={i === activePhoto ? 'active' : ''} onClick={() => setActivePhoto(i)}>
-                <img src={`${API_ORIGIN}${p.thumbnail}`} alt="" />
-              </button>
-            ))}
-          </div>
-        )}
+        />
       </div>
 
       <div className="pet-detail__info">

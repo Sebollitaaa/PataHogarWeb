@@ -1,0 +1,142 @@
+.photo-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  background: rgba(10, 10, 10, calc(0.94 * var(--viewer-backdrop, 1)));
+  color: #fff;
+  user-select: none;
+  -webkit-user-select: none;
+  animation: photo-viewer-in 0.18s ease;
+}
+
+.photo-viewer__top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  padding-top: max(var(--space-3), env(safe-area-inset-top));
+  flex-shrink: 0;
+}
+.photo-viewer__counter {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.photo-viewer__hint {
+  flex: 1;
+  text-align: center;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.photo-viewer__stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  touch-action: none; /* los gestos (deslizar, pellizcar) los maneja el visor */
+  cursor: zoom-in;
+}
+.photo-viewer__stage.is-zoomed {
+  cursor: grab;
+}
+.photo-viewer__stage.is-zoomed:active {
+  cursor: grabbing;
+}
+
+.photo-viewer__img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transform-origin: center center;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.photo-viewer__btn {
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.photo-viewer__btn:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+.photo-viewer__close {
+  width: 42px;
+  height: 42px;
+}
+
+.photo-viewer__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 52px;
+  height: 52px;
+  z-index: 2;
+}
+.photo-viewer__arrow--prev { left: var(--space-4); }
+.photo-viewer__arrow--next { right: var(--space-4); }
+
+.photo-viewer__thumbs {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+.photo-viewer__thumbs button {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 2px solid transparent;
+  background: none;
+  opacity: 0.55;
+  cursor: pointer;
+}
+.photo-viewer__thumbs button.active {
+  border-color: #fff;
+  opacity: 1;
+}
+.photo-viewer__thumbs img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (hover: none), (max-width: 640px) {
+  /* En el celular se navega deslizando: flechas más chicas y pegadas al borde. */
+  .photo-viewer__arrow {
+    width: 38px;
+    height: 38px;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  .photo-viewer__arrow--prev { left: 6px; }
+  .photo-viewer__arrow--next { right: 6px; }
+  .photo-viewer__thumbs {
+    justify-content: flex-start;
+  }
+  .photo-viewer__thumbs button {
+    width: 46px;
+    height: 46px;
+  }
+}
+
+@keyframes photo-viewer-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

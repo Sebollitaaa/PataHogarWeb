@@ -62,6 +62,17 @@ function ageUntil(pet) {
   return pet.status === 'adoptada' && pet.status_changed_at ? new Date(pet.status_changed_at) : new Date();
 }
 
+function serializePhoto(p) {
+  return {
+    id: p.id,
+    thumbnail: p.url_thumbnail,
+    medium: p.url_medium,
+    original: p.url_original,
+    width: p.width || null,
+    height: p.height || null,
+  };
+}
+
 function serializePet(pet, photos = []) {
   // La edad se recalcula al mostrarla, para que sea la de hoy y no una foto vieja
   // de cuando se publicó (o la del día de la adopción, si ya fue adoptada).
@@ -112,7 +123,7 @@ function serializePet(pet, photos = []) {
       id: pet.owner_id, firstName: pet.owner_first_name, lastName: pet.owner_last_name,
       isVerifiedOrganization: Boolean(pet.owner_is_verified_organization),
     },
-    photos: photos.map((p) => ({ id: p.id, thumbnail: p.url_thumbnail, medium: p.url_medium, original: p.url_original })),
+    photos: photos.map(serializePhoto),
     distanceKm: pet.distance_km !== undefined ? Number(pet.distance_km) : undefined,
     createdAt: pet.created_at,
   };
@@ -184,6 +195,8 @@ async function create(req, res) {
       url_original: urls.original,
       url_medium: urls.medium,
       url_thumbnail: urls.thumbnail,
+      width: urls.width,
+      height: urls.height,
       sort_order: sortOrder++,
     });
   }
@@ -317,12 +330,14 @@ async function addPhotos(req, res) {
       url_original: urls.original,
       url_medium: urls.medium,
       url_thumbnail: urls.thumbnail,
+      width: urls.width,
+      height: urls.height,
       sort_order: sortOrder++,
     });
   }
 
   const photos = await petRepository.findPhotos(pet.id);
-  res.status(201).json({ photos: photos.map((p) => ({ id: p.id, thumbnail: p.url_thumbnail, medium: p.url_medium, original: p.url_original })) });
+  res.status(201).json({ photos: photos.map(serializePhoto) });
 }
 
 async function deletePhoto(req, res) {

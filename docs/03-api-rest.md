@@ -92,7 +92,7 @@ Los endpoints paginados aceptan `page` (≥ 1) y `pageSize` y responden:
   "latitude": -38.7183, "longitude": -62.2663,
   "contactWhatsapp": null, "contactEmail": null,
   "owner": { "id": 1, "firstName": "Ana", "lastName": "Pérez", "isVerifiedOrganization": false },
-  "photos": [ { "id": 3, "thumbnail": "/uploads/…", "medium": "/uploads/…", "original": "/uploads/…" } ],
+  "photos": [ { "id": 3, "thumbnail": "/uploads/….webp", "medium": "/uploads/….webp", "original": "/uploads/….webp", "width": 1080, "height": 1440 } ],
   "distanceKm": 12.4,
   "createdAt": "2026-09-01T12:00:00.000Z"
 }

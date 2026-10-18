@@ -148,9 +148,10 @@ El contenido del catálogo vive en `backend/src/db/data/breeds.js` y se sincroni
 | `id` | INT UNSIGNED | PK, AI |
 | `pet_id` | INT UNSIGNED | NOT NULL, FK → `pets.id` (CASCADE) |
 | `url_original`, `url_medium`, `url_thumbnail` | VARCHAR(255) | NOT NULL |
+| `width`, `height` | INT UNSIGNED | NULL — medidas de la versión grande; el cliente decide si la foto llena el recuadro o se muestra entera |
 | `sort_order` | INT UNSIGNED | NOT NULL, default 0 (0 = portada) |
 
-Regla de negocio: una publicación posee entre 1 y 10 fotos.
+Regla de negocio: una publicación posee entre 1 y 10 fotos. Cada foto se guarda en tres versiones WebP: miniatura 320 × 320 (recortada), mediana de 800 px y grande de 1440 px de lado mayor, sin metadatos EXIF.
 
 ### `favorites`
 
@@ -381,6 +382,7 @@ Ubicación: `backend/src/db/migrations`. Se aplican en orden cronológico (`npm 
 | `20260916200000_create_verification_requests` | Crea `verification_requests` y `verification_documents`. |
 | `20261015120000_add_email_verification` | Agrega `users.email_verified_at` (las cuentas existentes se marcan como verificadas) y crea `email_codes`. |
 | `20261016120000_create_breeds` | Crea `breeds`, agrega `pets.breed_id`, `pets.cross_breed_id` e `is_pure_breed`, amplía `pets.breed` a 255 caracteres, carga el catálogo y vincula las razas escritas a mano en publicaciones existentes. |
+| `20261020120000_add_size_to_pet_photos` | Agrega `pet_photos.width` y `height` y las completa leyendo las fotos ya subidas. |
 | `20261019120000_add_age_reference_date_to_pets` | Agrega `pets.age_reference_date` (en publicaciones existentes con edad a mano toma la fecha de publicación). |
 | `20261018120000_create_chat_photos_and_reports` | Hace nulo `messages.content`, agrega `removed_at`/`removed_reason`, crea `message_attachments` y `message_reports`, y amplía los tipos de notificación y de acción de auditoría (`remove_message`). |
 | `20261017120000_create_follows` | Crea `follows` y agrega el tipo de notificación `followed_new_pet`. |

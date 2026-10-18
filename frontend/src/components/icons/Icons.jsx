@@ -284,3 +284,22 @@ export const OtherAnimalIcon = (props) => (
     <circle cx="15.8" cy="12" r="1.1" fill="currentColor" stroke="none" />
   </Svg>
 );
+
+export const ChevronLeftIcon = (props) => (
+  <Svg {...props}>
+    <path d="m15 6-6 6 6 6" />
+  </Svg>
+);
+
+export const ChevronRightIcon = (props) => (
+  <Svg {...props}>
+    <path d="m9 6 6 6-6 6" />
+  </Svg>
+);
+
+export const ZoomInIcon = (props) => (
+  <Svg {...props}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path d="m20 20-4.4-4.4M11 8.5v5M8.5 11h5" />
+  </Svg>
+);
