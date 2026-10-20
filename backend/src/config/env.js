@@ -44,5 +44,12 @@ module.exports = {
     maxAttempts: parseInt(process.env.EMAIL_CODE_MAX_ATTEMPTS, 10) || 5,
   },
 
+  // Notificaciones push (Web Push). Sin las claves VAPID quedan desactivadas.
+  push: {
+    publicKey: process.env.VAPID_PUBLIC_KEY || '',
+    privateKey: process.env.VAPID_PRIVATE_KEY || '',
+    subject: process.env.VAPID_SUBJECT || 'https://patahogar.online',
+  },
+
   locationMismatchBlockKm: parseFloat(process.env.LOCATION_MISMATCH_BLOCK_KM) || 100,
 };

@@ -6,6 +6,7 @@ import { getBrowserLocation } from '../utils/geolocation';
 import Field from '../components/ui/Field';
 import CityAutocomplete from '../components/CityAutocomplete';
 import ChangePasswordCard from '../components/ChangePasswordCard';
+import PushSettings from '../components/PushSettings';
 import PhoneInput from '../components/PhoneInput';
 import { PHONE_HINT } from '../utils/phone';
 import { CameraIcon, UserIcon } from '../components/icons/Icons';
@@ -114,6 +115,8 @@ export default function ProfilePage() {
           </button>
         </form>
       </div>
+
+      <PushSettings />
 
       <ChangePasswordCard />
     </div>

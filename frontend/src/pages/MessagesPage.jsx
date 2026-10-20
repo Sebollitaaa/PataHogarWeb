@@ -22,7 +22,7 @@ export default function MessagesPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { socket } = useSocket();
-  const { refresh: refreshNotifications } = useNotifications();
+  const { refreshUnreadMessages, setActiveConversation } = useNotifications();
 
   const [groups, setGroups] = useState(null);
   const [expandedPerson, setExpandedPerson] = useState(null);
@@ -49,10 +49,31 @@ export default function MessagesPage() {
       setMessages(d.messages);
       setLoadingThread(false);
       loadConversations();
-      refreshNotifications();
+      refreshUnreadMessages();
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId]);
+
+  // Le avisa al servidor qué conversación se está mirando (si la pestaña está a la vista),
+  // para no mandar una notificación push de algo que ya se está leyendo.
+  useEffect(() => {
+    if (!socket) return undefined;
+    const report = () => socket.emit('chat:viewing', conversationId && document.visibilityState === 'visible' ? conversationId : null);
+    report();
+    document.addEventListener('visibilitychange', report);
+    socket.on('connect', report);
+    return () => {
+      document.removeEventListener('visibilitychange', report);
+      socket.off('connect', report);
+      socket.emit('chat:viewing', null);
+    };
+  }, [socket, conversationId]);
+
+  // Mientras la conversación está abierta, sus mensajes nuevos se leen al llegar.
+  useEffect(() => {
+    setActiveConversation(conversationId);
+    return () => setActiveConversation(null);
+  }, [conversationId, setActiveConversation]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -65,7 +86,7 @@ export default function MessagesPage() {
         setMessages((list) => [...list, message]);
         // El chat ya está abierto: le avisamos al backend que este mensaje se leyó
         // al toque, así la campanita no se queda con un número colgado.
-        conversationsApi.messages(conversationId).then(() => refreshNotifications());
+        conversationsApi.messages(conversationId).then(() => refreshUnreadMessages());
       }
       loadConversations();
     };

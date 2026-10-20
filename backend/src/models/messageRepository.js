@@ -43,6 +43,22 @@ function lastMessageForConversations(conversationIds) {
     });
 }
 
+/** Mensajes recibidos y sin leer del usuario, en todas sus conversaciones (para el contador del chat). */
+async function countUnreadForUser(userId) {
+  const row = await db('messages as m')
+    .join('conversations as c', 'c.id', 'm.conversation_id')
+    .where((b) => {
+      b.where((a) => a.where('c.user_a_id', userId).andWhere('c.deleted_by_a', false))
+        .orWhere((a) => a.where('c.user_b_id', userId).andWhere('c.deleted_by_b', false));
+    })
+    .whereNull('m.read_at')
+    .whereNull('m.removed_at')
+    .whereNot('m.sender_id', userId)
+    .count({ count: '*' })
+    .first();
+  return Number(row.count);
+}
+
 /* ---------- adjuntos ---------- */
 
 function addAttachments(messageId, items) {
@@ -83,6 +99,7 @@ module.exports = {
   findByConversation,
   markAllRead,
   unreadCountsForConversations,
+  countUnreadForUser,
   lastMessageForConversations,
   addAttachments,
   findAttachmentsForMessages,

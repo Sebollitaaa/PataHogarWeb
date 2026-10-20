@@ -34,9 +34,7 @@ export default function Header() {
 
           {isAuthenticated ? (
             <>
-              <Link to="/mensajes" className="icon-link" title="Mensajes" aria-label="Mensajes">
-                <MessageIcon />
-              </Link>
+              <MessagesLink />
               <Link to="/favoritos" className="icon-link" title="Favoritos" aria-label="Favoritos">
                 <HeartIcon />
               </Link>
@@ -52,6 +50,18 @@ export default function Header() {
         </nav>
       </div>
     </header>
+  );
+}
+
+function MessagesLink() {
+  const { unreadMessages } = useNotifications();
+  const label = unreadMessages > 0 ? `Mensajes (${unreadMessages} sin leer)` : 'Mensajes';
+
+  return (
+    <Link to="/mensajes" className="icon-link icon-link--badge" title="Mensajes" aria-label={label}>
+      <MessageIcon />
+      {unreadMessages > 0 && <span className="badge-dot">{unreadMessages > 9 ? '9+' : unreadMessages}</span>}
+    </Link>
   );
 }
 

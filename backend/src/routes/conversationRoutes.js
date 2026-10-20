@@ -17,6 +17,7 @@ const router = Router();
 router.use(requireAuth);
 
 router.get('/', conversationController.list);
+router.get('/unread-count', conversationController.unreadCount);
 router.post('/', startConversationValidator, validate, conversationController.start);
 
 // Fotos del chat (privadas) y reportes: rutas fijas, antes de las que llevan :id de conversación.

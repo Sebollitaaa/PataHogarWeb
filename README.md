@@ -58,6 +58,7 @@ Plataforma web de adopción de mascotas: conecta a personas que ofrecen animales
 - Ubicación verificada opcional mediante geolocalización del navegador.
 
 **Interacción**
+- Notificaciones push (Web Push) en celular y computadora, como WhatsApp: nombre y texto del mensaje, sin importar si la web está abierta; se activan o desactivan por dispositivo desde Mi cuenta. El ícono de mensajes muestra los mensajes sin leer y la campanita, el resto de los avisos.
 - Chat con envío de fotos (hasta 5 por mensaje, privadas entre los participantes) y reporte de mensajes con revisión de un moderador.
 - Favoritos y seguimiento de perfiles verificados, con aviso cuando publican una mascota nueva.
 - Panel de filtros plegable (se oculta y cada grupo se pliega).

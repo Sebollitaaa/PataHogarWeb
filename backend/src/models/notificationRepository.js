@@ -1,5 +1,9 @@
 const db = require('../db/knex');
 
+// Los mensajes del chat se cuentan en el ícono de mensajes, no en la campanita.
+// (Las notificaciones viejas de este tipo quedan en la base pero ya no se muestran.)
+const CHAT_TYPES = ['new_message_on_your_pet', 'reply_to_inquiry'];
+
 function create(entry) {
   return db('notifications').insert({ ...entry, payload: JSON.stringify(entry.payload) }).then(([id]) => id);
 }
@@ -11,18 +15,19 @@ function findById(id) {
 function findByUser(userId, { page = 1, pageSize = 20 } = {}) {
   return db('notifications')
     .where({ user_id: userId })
+    .whereNotIn('type', CHAT_TYPES)
     .orderBy('created_at', 'desc')
     .limit(pageSize)
     .offset((page - 1) * pageSize);
 }
 
 async function countByUser(userId) {
-  const row = await db('notifications').where({ user_id: userId }).count({ count: '*' }).first();
+  const row = await db('notifications').where({ user_id: userId }).whereNotIn('type', CHAT_TYPES).count({ count: '*' }).first();
   return Number(row.count);
 }
 
 async function countUnread(userId) {
-  const row = await db('notifications').where({ user_id: userId, is_read: false }).count({ count: '*' }).first();
+  const row = await db('notifications').where({ user_id: userId, is_read: false }).whereNotIn('type', CHAT_TYPES).count({ count: '*' }).first();
   return Number(row.count);
 }
 
@@ -31,7 +36,7 @@ function markRead(id, userId) {
 }
 
 function markAllRead(userId) {
-  return db('notifications').where({ user_id: userId, is_read: false }).update({ is_read: true });
+  return db('notifications').where({ user_id: userId, is_read: false }).whereNotIn('type', CHAT_TYPES).update({ is_read: true });
 }
 
 // Se usa al abrir un chat: las notificaciones de mensajes de esa conversación puntual

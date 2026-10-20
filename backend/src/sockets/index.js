@@ -31,6 +31,11 @@ function initSockets(httpServer) {
     socket.join(`user:${socket.userId}`);
     logger.info(`Socket conectado: usuario ${socket.userId} (${socket.id})`);
 
+    // La pestaña avisa qué conversación tiene abierta (o null): así no se manda push de algo que ya está viendo.
+    socket.on('chat:viewing', (conversationId) => {
+      socket.data.viewing = conversationId ? String(conversationId) : null;
+    });
+
     socket.on('message:send', async ({ conversationId, content }, ack) => {
       try {
         const message = await chatService.sendMessage(io, {

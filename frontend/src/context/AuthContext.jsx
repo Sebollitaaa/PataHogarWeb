@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { authApi } from '../api/auth';
 import { api, setAccessToken, setUnauthorizedHandler } from '../api/client';
+import { unlinkDeviceFromAccount } from '../utils/push';
 
 const AuthContext = createContext(null);
 
@@ -43,6 +44,7 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(async () => {
     try {
+      await unlinkDeviceFromAccount();
       await authApi.logout();
     } finally {
       setAccessToken(null);

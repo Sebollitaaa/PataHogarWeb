@@ -124,6 +124,7 @@ Módulos por recurso: `auth`, `pets`, `catalog`, `favorites`, `follows`, `conver
 | `ChatImage`, `ImageLightbox`, `ReportMessageModal` | Foto privada del chat (descargada con la sesión), visor ampliado y formulario de reporte. |
 | `PhoneInput` | Campo de teléfono con el prefijo "+54" fijo (bandera dibujada en SVG); se escribe solo código de área y número. |
 | `FillSuggestions` | Sugerencias "Usar …" para completar un campo con datos ya cargados (cuenta o última publicación); `useLastContact` obtiene el contacto de la última publicación. |
+| `PushBoot`, `PushSettings` | Notificaciones push: registro del *service worker* (`public/sw.js`), aviso para activarlas, vínculo del dispositivo con la cuenta al iniciar sesión, y la tarjeta "Notificaciones" de Mi cuenta (activar/desactivar por dispositivo y enviar una prueba). |
 | `FollowButton` | Botón Seguir / Siguiendo de los perfiles verificados. |
 | `FilterSidebar` | Panel de filtros del inicio: se oculta/muestra completo y cada grupo se pliega; muestra cuántos filtros hay aplicados. |
 | `Avatar`, `VerifiedBadge` | Foto de perfil e insignia de verificación. |

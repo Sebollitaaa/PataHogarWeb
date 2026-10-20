@@ -1,9 +1,11 @@
 const ApiError = require('../utils/ApiError');
 const conversationRepository = require('../models/conversationRepository');
 const messageRepository = require('../models/messageRepository');
-const notificationService = require('./notificationService');
 const chatImageService = require('./chatImageService');
 const petRepository = require('../models/petRepository');
+const userRepository = require('../models/userRepository');
+const pushService = require('./pushService');
+const logger = require('../utils/logger');
 
 function serializeAttachment(a) {
   return { id: a.id, width: a.width, height: a.height };
@@ -46,6 +48,34 @@ function previewOf(message, attachmentCount = 0) {
 }
 
 /**
+ * Aviso push al destinatario, como WhatsApp: "Nombre" y el texto del mensaje.
+ * No se manda si en ese momento tiene abierta esa misma conversación.
+ */
+async function notifyRecipient(io, { convo, message, senderId, recipientId }) {
+  try {
+    if (!pushService.isEnabled()) return;
+    if (await pushService.isViewingConversation(io, recipientId, convo.id)) return;
+
+    const sender = await userRepository.findById(senderId);
+    const photos = message.attachments ? message.attachments.length : 0;
+    const text = (message.content || '').replace(/\s+/g, ' ').trim();
+    const body = text
+      ? (text.length > 140 ? `${text.slice(0, 137)}…` : text)
+      : (photos > 1 ? `📷 ${photos} fotos` : '📷 Foto');
+
+    await pushService.sendToUser(recipientId, {
+      title: sender ? `${sender.first_name} ${sender.last_name}`.trim() : 'PataHogar',
+      body,
+      url: `/mensajes/${convo.id}`,
+      tag: `chat-${convo.id}`,
+      urgency: 'high',
+    });
+  } catch (err) {
+    logger.warn(`Push de mensaje falló: ${err.message}`);
+  }
+}
+
+/**
  * Punto único para enviar un mensaje, usado tanto por el endpoint REST como
  * por el handler de Socket.io, así la notificación y el broadcast nunca se duplican ni se olvidan.
  * `files`: buffers de imagen ya recibidos por multer (opcional).
@@ -80,20 +110,14 @@ async function sendMessage(io, { conversationId, senderId, content, files = [] }
 
   const message = await messageRepository.findById(messageId);
   message.attachments = await messageRepository.findAttachmentsForMessages([messageId]);
-  const pet = await petRepository.findById(convo.pet_id);
-
-  const notifType = pet && Number(pet.owner_id) === Number(recipientId) ? 'new_message_on_your_pet' : 'reply_to_inquiry';
-  await notificationService.create(io, {
-    user_id: recipientId,
-    type: notifType,
-    payload: { conversationId: convo.id, petId: convo.pet_id, petName: pet ? pet.name : null, senderId: Number(senderId) },
-  });
 
   const payload = { conversationId: convo.id, message: serializeMessage(message) };
   if (io) {
     io.to(`user:${recipientId}`).emit('message:new', payload);
     io.to(`user:${senderId}`).emit('message:new', payload);
   }
+
+  await notifyRecipient(io, { convo, message, senderId, recipientId });
 
   return message;
 }

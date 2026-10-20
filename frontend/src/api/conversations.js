@@ -2,6 +2,7 @@ import { api } from './client';
 
 export const conversationsApi = {
   list: () => api.get('/conversations'),
+  unreadCount: () => api.get('/conversations/unread-count'),
   start: (petId, content) => api.post('/conversations', { petId, content }),
   messages: (conversationId, beforeId) => api.get(`/conversations/${conversationId}/messages${beforeId ? `?beforeId=${beforeId}` : ''}`),
   send: (conversationId, content, files = []) => {

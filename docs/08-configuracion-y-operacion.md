@@ -35,6 +35,8 @@ La versión de Node.js requerida se declara en `engines` de los `package.json` y
 | `EMAIL_CODE_EXPIRES_MIN` | No | `15` | Vigencia de los códigos. |
 | `EMAIL_RESEND_COOLDOWN_SECONDS` | No | `60` | Espera mínima entre dos envíos de código. |
 | `EMAIL_CODE_MAX_ATTEMPTS` | No | `5` | Intentos permitidos por código. |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | Para push | — | Par de claves de las notificaciones push. Generarlo una sola vez con `npx web-push generate-vapid-keys` y **no cambiarlo** después (los dispositivos ya suscritos dejarían de recibir avisos). Sin ellas, el push queda desactivado. |
+| `VAPID_SUBJECT` | No | `https://patahogar.online` | Contacto que se informa a los servicios de push (URL `https` o `mailto:`). |
 
 El servidor no inicia si falta una variable obligatoria (`Falta la variable de entorno obligatoria: <NOMBRE>`).
 

@@ -1,15 +1,33 @@
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { useSocket } from './SocketContext';
 import { notificationsApi } from '../api/notifications';
+import { conversationsApi } from '../api/conversations';
 
 const NotificationsContext = createContext(null);
 
 export function NotificationsProvider({ children }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { socket } = useSocket();
   const [unreadCount, setUnreadCount] = useState(0);
   const [recent, setRecent] = useState([]);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  // Conversación abierta en pantalla: sus mensajes se leen al llegar, no suman al contador.
+  const activeConversation = useRef(null);
+
+  const refreshUnreadMessages = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      const { count } = await conversationsApi.unreadCount();
+      setUnreadMessages(count);
+    } catch {
+      // sin conexión: se mantiene el valor anterior
+    }
+  }, [isAuthenticated]);
+
+  const setActiveConversation = useCallback((id) => {
+    activeConversation.current = id ? String(id) : null;
+  }, []);
 
   const refresh = useCallback(async () => {
     if (!isAuthenticated) return;
@@ -22,12 +40,27 @@ export function NotificationsProvider({ children }) {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    if (isAuthenticated) refresh();
-    else {
+    if (isAuthenticated) {
+      refresh();
+      refreshUnreadMessages();
+    } else {
       setUnreadCount(0);
       setRecent([]);
+      setUnreadMessages(0);
     }
-  }, [isAuthenticated, refresh]);
+  }, [isAuthenticated, refresh, refreshUnreadMessages]);
+
+  // Mensaje nuevo de otra persona: se suma al contador del chat (salvo que esa conversación esté abierta).
+  useEffect(() => {
+    if (!socket) return undefined;
+    const handler = ({ conversationId, message }) => {
+      if (user && message.senderId === user.id) return;
+      if (activeConversation.current === String(conversationId)) return;
+      setUnreadMessages((c) => c + 1);
+    };
+    socket.on('message:new', handler);
+    return () => socket.off('message:new', handler);
+  }, [socket, user]);
 
   useEffect(() => {
     if (!socket) return;
@@ -52,7 +85,7 @@ export function NotificationsProvider({ children }) {
   }, []);
 
   return (
-    <NotificationsContext.Provider value={{ unreadCount, recent, refresh, markRead, markAllRead }}>
+    <NotificationsContext.Provider value={{ unreadCount, recent, refresh, markRead, markAllRead, unreadMessages, refreshUnreadMessages, setActiveConversation }}>
       {children}
     </NotificationsContext.Provider>
   );

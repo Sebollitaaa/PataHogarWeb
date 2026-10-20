@@ -256,6 +256,7 @@ Cuando un perfil verificado publica una mascota, sus seguidores reciben una noti
 | Método | Ruta | Descripción |
 |---|---|---|
 | GET | `/conversations` | Conversaciones agrupadas por contraparte. |
+| GET | `/conversations/unread-count` | `{ count }`: mensajes recibidos sin leer en todas las conversaciones del usuario (contador del ícono de mensajes). |
 | POST | `/conversations` | Inicia o recupera la conversación de una mascota y envía el primer mensaje. |
 | GET | `/conversations/:id/messages?beforeId=` | Hasta 30 mensajes (orden cronológico); marca como leídos los recibidos y sus notificaciones. |
 | POST | `/conversations/:id/messages` | Envía un mensaje de texto, con fotos, o ambos (ver abajo). |
@@ -292,12 +293,25 @@ Cuando un perfil verificado publica una mascota, sus seguidores reciben una noti
 
 ## 3.8 Notificaciones — `/notifications` 🔐
 
+La campanita lista y cuenta solo notificaciones que **no** son de chat; los mensajes sin leer se cuentan con `GET /conversations/unread-count`.
+
 | Método | Ruta | Respuesta |
 |---|---|---|
 | GET | `/notifications?page=&pageSize=` | `{ notifications: [{ id, type, payload, isRead, createdAt }], pagination }` |
 | GET | `/notifications/unread-count` | `{ count }` |
 | PATCH | `/notifications/read-all` | `{ message }` |
 | PATCH | `/notifications/:id/read` | `{ message }` (`404` si no pertenece al usuario) |
+
+### Notificaciones push — `/push`
+
+| Método | Ruta | Acceso | Descripción |
+|---|---|---|---|
+| GET | `/push/public-key` | 🔓 | `{ publicKey }`: clave VAPID pública para suscribirse. `503` si el servidor no tiene claves configuradas. |
+| POST | `/push/subscribe` | 🔐 | Cuerpo: la suscripción del navegador `{ endpoint, keys: { p256dh, auth } }` (`endpoint` debe ser `https`). Registra el dispositivo del usuario (idempotente; si el dispositivo estaba en otra cuenta, pasa a esta). |
+| POST | `/push/unsubscribe` | 🔐 | Cuerpo: `{ endpoint }`. Da de baja el dispositivo. |
+| POST | `/push/test` | 🔐 | Envía una notificación de prueba a los dispositivos del usuario (`409` si no tiene ninguno). |
+
+Se envía un push cuando llega un mensaje de chat (título: nombre de quien escribe; cuerpo: el texto o "📷 Foto"; `urgency: high`; abre `/mensajes/:id`) y con cada notificación de la campanita. **No** se envía un push de un mensaje si el destinatario tiene abierta esa conversación (evento de socket `chat:viewing`). Los dispositivos que el servicio de push informa como inexistentes (404/410) se borran solos.
 
 ## 3.9 Usuarios — `/users`
 

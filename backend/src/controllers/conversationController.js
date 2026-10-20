@@ -68,6 +68,10 @@ async function list(req, res) {
   res.json({ conversations: Object.values(grouped) });
 }
 
+async function unreadCount(req, res) {
+  res.json({ count: await messageRepository.countUnreadForUser(req.user.id) });
+}
+
 async function getMessages(req, res) {
   const convo = await conversationRepository.findById(req.params.id);
   if (!convo) throw new ApiError(404, 'Conversación no encontrada.');
@@ -160,4 +164,4 @@ async function reportMessage(req, res) {
   res.status(201).json({ message: 'Gracias. Un moderador va a revisar el mensaje.' });
 }
 
-module.exports = { start, list, getMessages, sendMessage, setArchived, remove, getAttachment, reportMessage };
+module.exports = { start, list, unreadCount, getMessages, sendMessage, setArchived, remove, getAttachment, reportMessage };

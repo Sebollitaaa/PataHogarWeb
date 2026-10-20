@@ -249,8 +249,8 @@ Restricción: `UNIQUE (message_id, reporter_id)` (un mismo usuario no reporta do
 
 | `type` | `payload` (claves) |
 |---|---|
-| `new_message_on_your_pet` | `conversationId`, `petId`, `petName`, `senderId` |
-| `reply_to_inquiry` | `conversationId`, `petId`, `petName`, `senderId` |
+| `new_message_on_your_pet` *(en desuso)* | `conversationId`, `petId`, `petName`, `senderId` |
+| `reply_to_inquiry` *(en desuso)* | `conversationId`, `petId`, `petName`, `senderId` |
 | `pet_favorited_adopted` | `petId`, `petName` |
 | `post_deleted_by_admin` | `petId`?, `petName`, `reason`? (`marked_outdated`) |
 | `verification_approved` | `organizationName` |
@@ -258,7 +258,23 @@ Restricción: `UNIQUE (message_id, reporter_id)` (un mismo usuario no reporta do
 | `followed_new_pet` | `petId`, `petName`, `ownerId`, `ownerName` |
 | `message_removed_by_admin` | `conversationId` |
 
+Los mensajes del chat ya **no generan notificaciones**: se cuentan en el ícono de mensajes (mensajes sin leer) y llegan por push. Los dos tipos de arriba quedan por compatibilidad con registros antiguos y no se listan ni se cuentan en la campanita.
+
 El texto mostrado al usuario no se persiste: se construye en el cliente a partir de `type` y `payload`.
+
+### `push_subscriptions`
+
+Dispositivos que aceptaron recibir notificaciones push (un usuario puede tener varios).
+
+| Columna | Tipo | Restricciones | Descripción |
+|---|---|---|---|
+| `id` | INT UNSIGNED | PK, AI | |
+| `user_id` | INT UNSIGNED | NOT NULL, FK → `users.id` (CASCADE) | |
+| `endpoint` | TEXT | NOT NULL | Dirección de entrega del navegador (Google, Apple, Mozilla…). |
+| `endpoint_hash` | CHAR(64) | NOT NULL, UNIQUE | SHA-256 del `endpoint`; evita duplicados. |
+| `p256dh`, `auth` | VARCHAR(255) | NOT NULL | Claves de cifrado de la suscripción. |
+| `user_agent` | VARCHAR(255) | NULL | Navegador/dispositivo (informativo). |
+| `created_at` | TIMESTAMP | NOT NULL | |
 
 ### `refresh_tokens`
 
@@ -382,6 +398,7 @@ Ubicación: `backend/src/db/migrations`. Se aplican en orden cronológico (`npm 
 | `20260916200000_create_verification_requests` | Crea `verification_requests` y `verification_documents`. |
 | `20261015120000_add_email_verification` | Agrega `users.email_verified_at` (las cuentas existentes se marcan como verificadas) y crea `email_codes`. |
 | `20261016120000_create_breeds` | Crea `breeds`, agrega `pets.breed_id`, `pets.cross_breed_id` e `is_pure_breed`, amplía `pets.breed` a 255 caracteres, carga el catálogo y vincula las razas escritas a mano en publicaciones existentes. |
+| `20261021120000_create_push_subscriptions` | Crea `push_subscriptions`. |
 | `20261020120000_add_size_to_pet_photos` | Agrega `pet_photos.width` y `height` y las completa leyendo las fotos ya subidas. |
 | `20261019120000_add_age_reference_date_to_pets` | Agrega `pets.age_reference_date` (en publicaciones existentes con edad a mano toma la fecha de publicación). |
 | `20261018120000_create_chat_photos_and_reports` | Hace nulo `messages.content`, agrega `removed_at`/`removed_reason`, crea `message_attachments` y `message_reports`, y amplía los tipos de notificación y de acción de auditoría (`remove_message`). |
