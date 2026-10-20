@@ -109,6 +109,10 @@ UPDATE users SET role = 'admin' WHERE email = 'usuario@ejemplo.com';
 
 El directorio `backend/uploads` se crea en tiempo de ejecución y no forma parte del control de versiones. Debe conservarse junto con la base de datos en cualquier copia de seguridad, ya que las tablas `pet_photos`, `users.profile_photo_url` y `verification_documents` referencian archivos allí almacenados.
 
+### APK de la aplicación móvil
+
+El APK se publica en `/descargas/<archivo>.apk` desde la carpeta `backend/downloads/`. **No forma parte del repositorio** (pesa más de 100 MB, el límite de archivo de GitHub; la carpeta está en `.gitignore`): se copia directo al servidor, por ejemplo con `scp`, y se conserva en las actualizaciones. Al publicar una versión nueva hay que actualizar `APK` (versión, archivo, tamaño y huella SHA-256) en `frontend/src/pages/DownloadAppPage.jsx`. Para obtener la huella: `sha256sum archivo.apk`.
+
 ### Fotos del chat
 
 Las fotos que los usuarios se envían por el chat se guardan en `backend/storage/chat/` (carpeta privada, no versionada). Igual que `uploads`, deben incluirse en las copias de seguridad y estar en un disco persistente cuando se despliegue (por ejemplo, un volumen EBS en AWS).

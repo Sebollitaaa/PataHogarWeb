@@ -24,6 +24,7 @@ import ProfilePage from './pages/ProfilePage';
 import PublicProfilePage from './pages/PublicProfilePage';
 import AdminPage from './pages/AdminPage';
 import NotFoundPage from './pages/NotFoundPage';
+import DownloadAppPage from './pages/DownloadAppPage';
 
 export default function App() {
   return (
@@ -36,6 +37,7 @@ export default function App() {
                 <Route index element={<HomePage />} />
                 <Route path="mascotas/:id" element={<PetDetailPage />} />
                 <Route path="usuarios/:id" element={<PublicProfilePage />} />
+                <Route path="descargar" element={<DownloadAppPage />} />
                 <Route path="ingresar" element={<LoginPage />} />
                 <Route path="registro" element={<RegisterPage />} />
                 <Route path="verificar-email" element={<VerifyEmailPage />} />

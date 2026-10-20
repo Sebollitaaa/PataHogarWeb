@@ -84,3 +84,7 @@ temp/
 
 # ---------- Archivos privados del chat (fotos entre usuarios) ----------
 backend/storage/
+
+# ---------- APK de la app móvil (más de 100 MB: se sube directo al servidor) ----------
+backend/downloads/*
+!backend/downloads/.gitkeep

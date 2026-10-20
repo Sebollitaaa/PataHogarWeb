@@ -52,6 +52,7 @@ El orden es significativo: `SocketProvider` depende de `AuthProvider`, y `Notifi
 |---|---|---|
 | `/` | `HomePage` | Público |
 | `/mascotas/:id` | `PetDetailPage` | Público |
+| `/descargar` | `DownloadAppPage` (APK de Android, PWA en Android e iOS) | Público |
 | `/usuarios/:id` | `PublicProfilePage` | Público |
 | `/ingresar` | `LoginPage` | Público |
 | `/registro` | `RegisterPage` | Público |

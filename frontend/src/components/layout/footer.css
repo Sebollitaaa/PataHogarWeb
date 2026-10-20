@@ -31,3 +31,34 @@
   color: var(--color-text-muted);
   font-size: 0.85rem;
 }
+
+.site-footer__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+  flex-wrap: wrap;
+}
+.site-footer__links {
+  display: flex;
+  gap: var(--space-4);
+}
+.site-footer__app {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+.site-footer__app svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.site-footer__app:hover {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}

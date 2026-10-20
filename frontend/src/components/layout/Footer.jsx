@@ -21,7 +21,18 @@ export default function Footer() {
           </Link>
         </div>
         )}
-        <p className="site-footer__copy">PataHogar — plataforma de adopción de mascotas.</p>
+        <div className="site-footer__bottom">
+          <p className="site-footer__copy">PataHogar — plataforma de adopción de mascotas.</p>
+          <nav className="site-footer__links" aria-label="Enlaces del pie de página">
+            <Link to="/descargar" className="site-footer__app">
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                <rect x="7" y="2.5" width="10" height="19" rx="2.2" />
+                <path d="M12 8v6m0 0-2.4-2.4M12 14l2.4-2.4" />
+              </svg>
+              Descargar la app
+            </Link>
+          </nav>
+        </div>
       </div>
     </footer>
   );

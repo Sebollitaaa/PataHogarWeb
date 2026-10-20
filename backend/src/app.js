@@ -44,6 +44,21 @@ if (env.nodeEnv !== 'test') {
 const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
 app.use('/uploads', helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }), express.static(UPLOADS_DIR));
 
+// Descargas de la aplicación móvil (APK). Es una carpeta propia, fuera de Git: el
+// archivo pesa más de 100 MB y GitHub no lo acepta. Se sube directo al servidor.
+const DOWNLOADS_DIR = path.join(__dirname, '..', 'downloads');
+app.use('/descargas', express.static(DOWNLOADS_DIR, {
+  dotfiles: 'deny',
+  index: false,
+  maxAge: '1h',
+  setHeaders(res, filePath) {
+    if (filePath.endsWith('.apk')) {
+      res.setHeader('Content-Type', 'application/vnd.android.package-archive');
+      res.setHeader('Content-Disposition', `attachment; filename="${path.basename(filePath)}"`);
+    }
+  },
+}));
+
 app.use('/api', generalLimiter, routes);
 
 // A partir de acá, cualquier URL que no sea /api ni /uploads es el frontend ya
